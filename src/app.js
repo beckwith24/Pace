@@ -98,6 +98,48 @@
     if (!D.error && S.autoSend && !opts.skipAuto && (S.lastSent || '').slice(0, 10) !== t) sendWeek({ quiet: true });
   }
 
+  /* ---------------- exercise library ---------------- */
+  let LIB = null, LIBMAP = {}, libLoading = null;
+  function loadLib() {
+    if (LIB || libLoading) return libLoading;
+    libLoading = fetch('lib/exercises.json').then(r => r.ok ? r.json() : []).catch(() => []).then(j => {
+      LIB = Array.isArray(j) ? j : [];
+      LIB.forEach(e => { LIBMAP[e.id] = e; });
+      // only refresh the picker list while it's open, so the search box keeps focus
+      const el = UI.edit && UI.edit.picker && document.getElementById('pick-results');
+      if (el) el.innerHTML = pickResults(); else render();
+    });
+    return libLoading;
+  }
+  const EQ_GROUPS = {
+    dumbbell: { label: 'Dumbbell', eq: ['dumbbell'] },
+    body: { label: 'Bodyweight', eq: ['body only', 'none'] },
+    kettlebells: { label: 'Kettlebell', eq: ['kettlebells'] },
+    other: { label: 'Bands & balls', eq: ['bands', 'exercise ball', 'medicine ball'] },
+    all: { label: 'All', eq: null },
+  };
+  function cap(s) { return String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1); }
+  function exPics(b, big) {
+    if (!b.ex) return '';
+    const a = esc(b.move);
+    return '<div class="pics' + (big ? '' : ' small') + '">' +
+      '<figure><img src="' + esc(C.exImage(b.ex, 0)) + '" alt="' + a + ', start position" loading="lazy" onerror="this.closest(\'.pics\').remove()"><figcaption>Start</figcaption></figure>' +
+      '<figure><img src="' + esc(C.exImage(b.ex, 1)) + '" alt="' + a + ', finish position" loading="lazy" onerror="this.closest(\'.pics\').remove()"><figcaption>Finish</figcaption></figure></div>';
+  }
+  function liftCard(b) {
+    const info = LIBMAP[b.ex];
+    return '<div class="card lift">' + exPics(b, true) +
+      '<div class="row-between"><div class="grow"><div class="step-name">' + esc(b.move) + '</div><div class="muted small">' + b.sets + ' sets of ' + esc(b.reps) + ' · about ' + C.fmtDur(b.sec) + ' with rest</div></div></div>' +
+      (info && info.mus && info.mus.length ? '<div class="tags">' + info.mus.map(m => '<span class="tag">' + esc(cap(m)) + '</span>').join('') + '</div>' : '') +
+      (info && info.how && info.how.length ? '<details><summary>How to do it</summary><ol class="how">' + info.how.map(x => '<li>' + esc(x) + '</li>').join('') + '</ol></details>' : '') +
+      '</div>';
+  }
+  function thumbs(s) {
+    const ex = s.blocks.filter(b => b.kind === 'lift' && b.ex).slice(0, 5);
+    if (!ex.length) return '';
+    return '<div class="thumbs">' + ex.map(b => '<img src="' + esc(C.exImage(b.ex, 0)) + '" alt="' + esc(b.move) + '" loading="lazy" onerror="this.remove()">').join('') + '</div>';
+  }
+
   /* ---------------- plan helpers ---------------- */
   function ready() { return C.readiness(D.wellness, today()); }
   function plan(from, n) {
@@ -241,7 +283,7 @@
 
     h += '<section class="card"><div class="row-between"><span class="eyebrow">TODAY\'S WORKOUT</span>' + (s.edited ? '<span class="pill blue">Edited</span>' : s.adjusted ? '<span class="pill amber">Adjusted</span>' : '') + '</div>' +
       '<div class="sess"><div class="sess-icon">' + iconFor(s) + '</div><div><div class="sess-name">' + esc(s.name) + '</div><div class="muted">' + esc(s.summary) + '</div></div></div>' +
-      shapeBar(s, 34) +
+      shapeBar(s, 34) + thumbs(s) +
       (s.adjusted && s.notes[0] ? '<div class="why">' + ICON.info + '<span>' + esc(s.notes[0]) + '</span></div>' : '') +
       (s.type !== 'rest' ? '<button class="btn primary" data-action="open" data-date="' + t + '">' + ICON.watch + ' View steps</button>' : '') +
       (s.type !== 'rest' ? '<div class="tiny center">' + esc(sentLine(t)) + '</div>' : '') +
@@ -324,12 +366,16 @@
           b.steps.map(x => stepRow(x, max, null)).join('') +
           '<div class="tiny">Each round ' + C.fmtClock(round) + ' · ' + C.fmtDur(round * b.repeat) + ' in total</div></div>';
         t += round * b.repeat;
+      } else if (b.kind === 'lift') {
+        h += liftCard(b);
+        t += b.sec;
       } else {
         h += '<div class="card">' + stepRow(b, max, t) + '</div>';
         t += b.sec;
       }
     });
     h += '</div>';
+    if (s.sport === 'WeightTraining') loadLib();
     if (s.sport !== 'WeightTraining') h += zoneTable(s);
     if (canEdit) h += '<button class="btn" data-action="edit">' + ICON.edit + ' Edit this workout</button>';
     if (s.edited) h += '<button class="btn ghost" data-action="reset">Reset to the plan</button>';
@@ -396,14 +442,39 @@
   }
   function edLift(b, path, i, n) {
     const setOpts = [1, 2, 3, 4, 5, 6].map(v => '<option value="' + v + '"' + (v === b.sets ? ' selected' : '') + '>' + v + ' sets</option>').join('');
+    const thumb = b.ex ? '<img class="ed-thumb" src="' + esc(C.exImage(b.ex, 0)) + '" alt="" loading="lazy" onerror="this.remove()">' : '';
     return '<div class="ed-step" style="border-left-color:var(--muted)">' +
-      '<div class="ed-row"><input type="text" value="' + esc(b.move) + '" data-ef="move" data-p="' + path + '" aria-label="Exercise" maxlength="40">' + moveBtns(path, i, n) + '</div>' +
+      '<div class="ed-row">' + thumb + '<input type="text" value="' + esc(b.move) + '" data-ef="move" data-p="' + path + '" aria-label="Exercise" maxlength="40">' + moveBtns(path, i, n) + '</div>' +
+      '<button class="link pick-link" data-action="ed-pick" data-p="' + path + '">' + (b.ex ? 'Swap exercise' : 'Choose from library to add pictures') + '</button>' +
       '<div class="ed-row wrap"><select data-ef="sets" data-p="' + path + '" aria-label="Sets">' + setOpts + '</select>' +
       '<label class="reps"><span class="tiny">reps</span><input type="text" value="' + esc(b.reps) + '" data-ef="reps" data-p="' + path + '" aria-label="Reps" maxlength="24"></label></div></div>';
   }
 
+  function pickResults() {
+    const P = UI.edit.picker;
+    if (!LIB) { loadLib(); return '<div class="tiny center">Loading exercises…</div>'; }
+    const q = P.q.trim().toLowerCase(), eqs = EQ_GROUPS[P.eq].eq;
+    const words = q.split(/\s+/).filter(Boolean);
+    const hits = LIB.filter(e => (!eqs || eqs.includes(e.eq)) &&
+      words.every(w => (e.name + ' ' + e.mus.join(' ')).toLowerCase().includes(w)));
+    let h = '';
+    if (q) h += '<button class="pick custom" data-action="ed-pick-custom"><span class="pick-ph">' + ICON.plus + '</span><span class="grow"><span class="step-name">Use “' + esc(P.q.trim()) + '”</span><span class="muted small">Custom exercise, no pictures</span></span></button>';
+    h += hits.slice(0, 40).map(e => '<button class="pick" data-action="ed-pick-choose" data-id="' + esc(e.id) + '"><img src="' + esc(C.exImage(e.id, 0)) + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"><span class="grow"><span class="step-name">' + esc(e.name) + '</span><span class="muted small">' + esc(cap(e.eq === 'none' ? 'bodyweight' : e.eq) + (e.mus.length ? ' · ' + e.mus.join(', ') : '')) + '</span></span></button>').join('');
+    if (!hits.length) h += '<div class="tiny center">No matches. Try another word, or "All".</div>';
+    else if (hits.length > 40) h += '<div class="tiny center">Showing 40 of ' + hits.length + '. Type more to narrow it down.</div>';
+    return h;
+  }
+  function viewPicker() {
+    const P = UI.edit.picker;
+    return '<header class="top"><button class="icon-btn" data-action="ed-pick-close" aria-label="Back to the workout">' + ICON.back + '</button><div class="grow"><h1 class="h-sm">' + (P.path == null ? 'Add exercise' : 'Swap exercise') + '</h1><div class="sub">Free Exercise DB · public domain photos</div></div></header>' +
+      '<input class="search" type="search" placeholder="Search: squat, row, glutes…" value="' + esc(P.q) + '" data-pick-q="1" aria-label="Search exercises" autocomplete="off">' +
+      '<div class="chips" role="group" aria-label="Equipment">' + Object.keys(EQ_GROUPS).map(k => '<button aria-pressed="' + (P.eq === k) + '" data-action="ed-pick-eq" data-eq="' + k + '">' + EQ_GROUPS[k].label + '</button>').join('') + '</div>' +
+      '<div class="list" id="pick-results">' + pickResults() + '</div>';
+  }
+
   function viewEdit() {
     const E = UI.edit, d = E.draft;
+    if (E.picker) return viewPicker();
     const typeOpts = '<option value="">Keep current</option>' + Object.keys(C.SESSION_TYPES).map(k => '<option value="' + k + '">' + C.SESSION_TYPES[k].label + '</option>').join('');
     let h = '<header class="top"><button class="icon-btn" data-action="ed-cancel" aria-label="Cancel editing">' + ICON.back + '</button><div class="grow"><h1 class="h-sm">Edit workout</h1><div class="sub">' + esc(fmtDate(E.date, true)) + '</div></div></header>';
     h += '<section class="card"><label class="field"><span>Name</span><input type="text" value="' + esc(d.name) + '" data-ed="name" maxlength="60"></label>' +
@@ -459,9 +530,26 @@
       d.blocks.push({ repeat: 3, label: 'Intervals', steps: [
         { label: 'Work', sec: 180, zone: [4, 4], kind: 'work' },
         { label: 'Recover', sec: 120, zone: [1, 1], kind: 'rec' }] });
-    } else if (a === 'ed-add-lift') {
-      d.blocks.push({ label: '', sec: 360, zone: null, kind: 'lift', move: 'New exercise', sets: 3, reps: '10' });
-      d.blocks[d.blocks.length - 1].label = C.liftLabel(d.blocks[d.blocks.length - 1]);
+    } else if (a === 'ed-add-lift' || a === 'ed-pick') {
+      UI.edit.picker = { path: a === 'ed-pick' ? p : null, q: '', eq: 'dumbbell' };
+      loadLib(); render(); window.scrollTo(0, 0); return;
+    } else if (a === 'ed-pick-close') {
+      UI.edit.picker = null;
+    } else if (a === 'ed-pick-eq') {
+      UI.edit.picker.eq = el.dataset.eq;
+    } else if (a === 'ed-pick-choose' || a === 'ed-pick-custom') {
+      const P = UI.edit.picker;
+      const e = a === 'ed-pick-choose' ? LIBMAP[el.dataset.id] : null;
+      const move = e ? e.name : P.q.trim().slice(0, 40);
+      if (!move) return;
+      if (P.path == null) {
+        const b = { label: '', sec: 360, zone: null, kind: 'lift', move, sets: 3, reps: '10', ex: e ? e.id : null };
+        b.label = C.liftLabel(b); d.blocks.push(b);
+      } else {
+        const L = locate(P.path);
+        L.item.move = move; L.item.ex = e ? e.id : null; L.item.label = C.liftLabel(L.item);
+      }
+      UI.edit.picker = null;
     } else if (a === 'ed-save') { saveEdit(); return; }
     else if (a === 'ed-cancel') { UI.detail = UI.edit.date; UI.edit = null; }
     render();
@@ -591,6 +679,13 @@
     } else if (el.dataset.schedule) {
       S.schedule[el.dataset.schedule] = el.value; saveSettings(); render();
     }
+  });
+
+  document.addEventListener('input', e => {
+    if (!e.target.dataset.pickQ || !UI.edit || !UI.edit.picker) return;
+    UI.edit.picker.q = e.target.value;
+    const el = document.getElementById('pick-results');
+    if (el) el.innerHTML = pickResults();
   });
 
   window.addEventListener('pageshow', () => loadAll());

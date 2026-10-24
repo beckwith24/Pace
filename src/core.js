@@ -30,24 +30,34 @@ const LIFTS = {
   liftA: {
     focus: 'Lower body + core',
     moves: [
-      ['Goblet squat', '10'],
-      ['Dumbbell Romanian deadlift', '10'],
-      ['Reverse lunge', '8 each leg'],
-      ['Single-leg glute bridge', '12 each leg'],
-      ['Dead bug', '10 each side'],
+      ['Goblet squat', '10', 'Goblet_Squat'],
+      ['Dumbbell Romanian deadlift', '10', 'Stiff-Legged_Dumbbell_Deadlift'],
+      ['Reverse lunge', '8 each leg', 'Dumbbell_Rear_Lunge'],
+      ['Single-leg glute bridge', '12 each leg', 'Single_Leg_Glute_Bridge'],
+      ['Dead bug', '10 each side', 'Dead_Bug'],
     ],
   },
   liftB: {
     focus: 'Upper body + core',
     moves: [
-      ['Dumbbell floor press', '10'],
-      ['One-arm dumbbell row', '10 each arm'],
-      ['Standing overhead press', '8'],
-      ['Dumbbell biceps curl', '12'],
-      ['Side plank', '3 holds each side'],
+      ['Dumbbell floor press', '10', 'Dumbbell_Floor_Press'],
+      ['One-arm dumbbell row', '10 each arm', 'One-Arm_Dumbbell_Row'],
+      ['Standing overhead press', '8', 'Standing_Dumbbell_Press'],
+      ['Dumbbell biceps curl', '12', 'Dumbbell_Bicep_Curl'],
+      ['Side plank', '3 holds each side', 'Side_Bridge'],
     ],
   },
 };
+
+// Exercise photos come from free-exercise-db (public domain). Photos for the
+// plan's own moves ship with the app; any other pick loads from the library.
+const BUNDLED_EX = ['Goblet_Squat', 'Stiff-Legged_Dumbbell_Deadlift', 'Dumbbell_Rear_Lunge', 'Single_Leg_Glute_Bridge', 'Dead_Bug',
+  'Dumbbell_Floor_Press', 'One-Arm_Dumbbell_Row', 'Standing_Dumbbell_Press', 'Dumbbell_Bicep_Curl', 'Side_Bridge'];
+function exImage(id, frame) {
+  if (!id || !/^[A-Za-z0-9_\-()',.]+$/.test(id)) return '';
+  return BUNDLED_EX.includes(id) ? 'img/ex/' + id + '/' + frame + '.jpg'
+    : 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/' + encodeURIComponent(id) + '/' + frame + '.jpg';
+}
 
 const SPORT_MATCH = {
   Run: ['Run', 'TrailRun', 'VirtualRun', 'Treadmill'],
@@ -204,7 +214,7 @@ function buildLift(type, date, wi) {
   const sets = wi.deload ? 2 : (wi.block === 0 && wi.wib <= 2 ? 2 : 3);
   const lift = LIFTS[type];
   const blocks = [{ label: 'Warm up: easy movement', sec: 300, zone: null, kind: 'warm' }];
-  lift.moves.forEach(([move, reps]) => blocks.push({ label: move + ' ' + sets + '×' + reps, sec: sets * 120, zone: null, kind: 'lift', move, sets, reps }));
+  lift.moves.forEach(([move, reps, ex]) => blocks.push({ label: move + ' ' + sets + '×' + reps, sec: sets * 120, zone: null, kind: 'lift', move, sets, reps, ex }));
   return {
     date, type, sport: 'WeightTraining', hard: false,
     name: SESSION_TYPES[type].label, focus: lift.focus,
@@ -455,7 +465,7 @@ const PaceCore = {
   Z_COLORS, Z_NAMES, Z_USES, SESSION_TYPES, DAY_KEYS, DAY_SHORT, DEFAULT_SCHEDULE, LIFTS,
   ymd, parseYmd, addDays, daysBetween, mondayOf, dayIndex,
   estMaxHr, maxHrFor, zoneTops, zoneRanges, fmtDur, fmtClock, icuDur, zoneLabel, zoneBpm,
-  totalSec, flatSteps, intensitySplit, zoneTime, summarize, liftLabel, safeLabel, clone, weekInfo, volumeFactor, buildSession, readiness, adapt,
+  exImage, totalSec, flatSteps, intensitySplit, zoneTime, summarize, liftLabel, safeLabel, clone, weekInfo, volumeFactor, buildSession, readiness, adapt,
   activitiesByDate, planDays, planNotes, icuText, toEvent, externalId,
 };
 if (typeof module !== 'undefined') module.exports = PaceCore;

@@ -15,6 +15,10 @@ A personal training app for iPhone + Garmin fenix 7. Pace plans running, cycling
 - Each morning readiness decides today's session: as planned (65+), fewer repeats with longer recoveries (55–64), an easy Zone 2 swap (40–54), or optional recovery (under 40).
 - Every run and ride step carries a heart rate zone target, so the watch alerts at step changes and when you leave the zone.
 
+## Exercise photos
+
+Strength exercises, photos and how-to steps come from [Free Exercise DB](https://github.com/yuhonas/free-exercise-db), released into the public domain (Unlicense). `lib/exercises.json` is a slimmed copy (home-gym equipment only); photos for the plan's own moves are bundled in `img/ex/`, and others load from the Free Exercise DB repository.
+
 ## Develop
 
 - `src/core.js`: plan, readiness, zones and Intervals.icu workout text (pure functions).
