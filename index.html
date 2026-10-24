@@ -1,0 +1,952 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E1116">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pace">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAACqklEQVR42u3dMVLjQBBAUayamCoSInwfH5n74IMQkBDIKtmasbt73s92a7fAmqceSV4vp/ePzzdprcUhEByCQ3AIDsEhOASH4BAcgkOCQ3AIDsEhOASH4BAcgkNwSHAIDsEhOASH4BAcgkNwCA4JDsEhOASH4BAcgkNwCA7BITgkOASH4BAcgkNwCA5lr83zUr9/vv7/8nK+Wn6TY0XG6u9oRhy3HPAxO45tAXxsdKr90yH3r71LEHcrguP+LcP+YnIIDpMADsFh2MBhmeEQHCnHhpFjcggOwWFfgAMvOKwrHILDBILDisIhOIwNmRy0waF5cTjLB9Ucgg1zKT6vMO5jnq3AEu7/w5fz9Zlj5iUj7e+LdiHimqPmZtflq8Mx5BBHuAw6/j0s8yze36R9wmVEmQtkk6Mzi1AyDn4zS+qVuHdsyOToCWU/wXqPW2wrKofDngJHGogx95SDZ8VSdbW2D5BZsqc2dNmsQd6x0RPH6tk8yfulAV9moPdWwiLYOEaDbmgjvOReA7sVllF12rtbSbMMhc+NxaF55ivNdYU+9XMON1OT4rCnwMErHMOWoeoNbQgcM2/b5a1U+2hCWKwZz6Kl0sv270MjXnNE8PHw9/DYX5xBSeu7Ni85ZPEndtIrs+Yo6FbFf4xXkG0i6TnjIZg9BQ7BITjSDP/UV+hwCA7BEWoLyP7UBw7BITjibAQF3kmAQ3AIjqo3PnBYVzgEh9kDh9U1OQSHTB04BIcBAAdScAgOYwAOmOAQHILDTjHPBQocgmPk8Kh6XwPHUR+F73jhOOSj9rMQOB73Uf4pmf/ZRyaH4BAcgkNwCA7BITgEh+CQ4BAcgkNwCA7BITgEh+AQHBIcgkNwCA7BITgEh+AQHIJDgkNwCA7BITgEh+AQHIJDcGjifgEJnMW4nzXsxgAAAABJRU5ErkJggg==">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAACqklEQVR42u3dMVLjQBBAUayamCoSInwfH5n74IMQkBDIKtmasbt73s92a7fAmqceSV4vp/ePzzdprcUhEByCQ3AIDsEhOASH4BAcgkOCQ3AIDsEhOASH4BAcgkNwSHAIDsEhOASH4BAcgkNwCA4JDsEhOASH4BAcgkNwCA7BITgkOASH4BAcgkNwCA5lr83zUr9/vv7/8nK+Wn6TY0XG6u9oRhy3HPAxO45tAXxsdKr90yH3r71LEHcrguP+LcP+YnIIDpMADsFh2MBhmeEQHCnHhpFjcggOwWFfgAMvOKwrHILDBILDisIhOIwNmRy0waF5cTjLB9Ucgg1zKT6vMO5jnq3AEu7/w5fz9Zlj5iUj7e+LdiHimqPmZtflq8Mx5BBHuAw6/j0s8yze36R9wmVEmQtkk6Mzi1AyDn4zS+qVuHdsyOToCWU/wXqPW2wrKofDngJHGogx95SDZ8VSdbW2D5BZsqc2dNmsQd6x0RPH6tk8yfulAV9moPdWwiLYOEaDbmgjvOReA7sVllF12rtbSbMMhc+NxaF55ivNdYU+9XMON1OT4rCnwMErHMOWoeoNbQgcM2/b5a1U+2hCWKwZz6Kl0sv270MjXnNE8PHw9/DYX5xBSeu7Ni85ZPEndtIrs+Yo6FbFf4xXkG0i6TnjIZg9BQ7BITjSDP/UV+hwCA7BEWoLyP7UBw7BITjibAQF3kmAQ3AIjqo3PnBYVzgEh9kDh9U1OQSHTB04BIcBAAdScAgOYwAOmOAQHILDTjHPBQocgmPk8Kh6XwPHUR+F73jhOOSj9rMQOB73Uf4pmf/ZRyaH4BAcgkNwCA7BITgEh+CQ4BAcgkNwCA7BITgEh+AQHBIcgkNwCA7BITgEh+AQHIJDgkNwCA7BITgEh+AQHIJDcGjifgEJnMW4nzXsxgAAAABJRU5ErkJggg==">
+<title>Pace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#0E1116;--card:#171B22;--card2:#11151B;--line:#2A303A;--hair:#222832;
+  --text:#F2F4F7;--muted:#9AA4B2;--soft:#D5DAE1;
+  --lime:#C6F432;--amber:#FFB066;--red:#FF6B6F;
+  --z1:#8FA3BF;--z2:#4EA8FF;--z3:#3FD08A;--z4:#FF9F43;--z5:#FF5A5F;
+  --display:'Barlow Condensed',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{background:var(--bg);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+#view{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 18px) 16px calc(env(safe-area-inset-bottom) + 104px);display:flex;flex-direction:column;gap:14px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.top .grow{flex:1}
+h1{margin:0;font-family:var(--display);font-size:38px;font-weight:700;letter-spacing:.3px;line-height:1.05}
+h1.h-sm{font-size:28px}
+.sub{font-size:13px;color:var(--muted);font-weight:500}
+.icon-btn{width:44px;height:44px;border-radius:22px;border:1px solid var(--line);background:var(--card);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card{background:var(--card);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.card.flat{gap:12px}
+.eyebrow{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.8px}
+.row-between{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.muted{color:var(--muted)} .small{font-size:13px} .tiny{font-size:12px;color:var(--muted)} .center{text-align:center}
+.pill{font-size:11px;font-weight:700;color:#0E1116;padding:4px 8px;border-radius:8px;white-space:nowrap}
+.pill.amber{background:var(--amber)} .pill.red{background:var(--red)}
+.link{background:none;border:0;padding:8px 0;color:var(--lime);font-weight:600;font-size:13px}
+.banner{background:#1D2414;border:1px solid #3A4A1F;border-radius:14px;padding:10px 12px;font-size:13px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.banner .link{padding:0}
+.banner.err{background:#2A1517;border-color:#5A2A2E}
+.btn{height:50px;border-radius:14px;border:1px solid var(--line);background:var(--card2);font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;width:100%}
+.btn.primary{background:var(--lime);border:0;color:#0E1116;font-weight:700;font-size:16px}
+.btn:disabled{opacity:.6}
+.ready{flex-direction:row;align-items:center;gap:16px}
+.ring{width:84px;height:84px;border-radius:50%;padding:7px;flex-shrink:0}
+.ring>div{width:100%;height:100%;border-radius:50%;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring b{font-family:var(--display);font-size:30px;line-height:1}
+.ring span{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.6px}
+.ready-body{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0}
+.ready-head{font-weight:600}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.metric{display:flex;flex-direction:column}
+.ml{font-size:11px;color:var(--muted)} .mv{font-weight:600} .ms{font-size:11px;color:var(--muted)} .ms.warn{color:var(--amber)}
+.sess{display:flex;gap:12px;align-items:center}
+.sess-icon{width:44px;height:44px;border-radius:12px;background:#24301A;color:var(--lime);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sess-name{font-family:var(--display);font-size:26px;font-weight:700;line-height:1.05}
+.shape{display:flex;gap:2px;align-items:flex-end}
+.shape>div{border-radius:3px;min-width:2px}
+.why{display:flex;gap:10px;align-items:flex-start;background:var(--card2);border-radius:12px;padding:10px 12px;font-size:13px;color:var(--soft)}
+.why svg{color:var(--amber);flex-shrink:0;margin-top:1px}
+.why.calm svg{color:var(--muted)}
+.note-card{flex-direction:row;align-items:flex-start;font-size:13px;color:var(--soft)}
+.note-card svg{flex-shrink:0;color:var(--muted)}
+.strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:8px}
+.day{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 0;background:var(--card);border:0;border-radius:12px;min-height:64px}
+.day .dn{font-size:11px;color:var(--muted)} .day .dt{font-size:12px;font-weight:600}
+.day .dot{width:6px;height:6px;border-radius:3px}
+.day.on{background:var(--lime);color:#0E1116} .day.on .dn{color:#0E1116;font-weight:600}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--card);border-radius:12px;padding:4px}
+.seg button{height:40px;border:0;border-radius:9px;background:transparent;color:#B8C0CC;font-weight:600;font-size:13px}
+.seg button[aria-pressed="true"]{background:var(--lime);color:#0E1116;font-weight:700}
+.split{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--line)}
+.list{display:flex;flex-direction:column;gap:6px}
+.li{display:flex;align-items:center;gap:12px;background:var(--card);border:0;border-radius:14px;padding:10px 12px;min-height:56px;text-align:left;width:100%}
+.li.on{background:#1D2414;outline:1px solid var(--lime)}
+.li-day{width:36px;font-size:12px;color:var(--muted);font-weight:600}
+.li.on .li-day{color:var(--lime)}
+.li-main{flex:1;display:flex;flex-direction:column;min-width:0}
+.li-name{font-weight:600;font-size:14px}
+.ok{color:var(--lime);display:flex}
+.bullet{display:flex;gap:8px;font-size:13px;color:var(--soft)}
+.bullet.warn>span:first-child{color:var(--amber)} .bullet.good>span:first-child{color:var(--lime)} .bullet.info>span:first-child{color:var(--muted)}
+.step{display:flex;gap:12px;align-items:stretch}
+.step .bar{width:6px;border-radius:3px;flex-shrink:0}
+.step-name{font-weight:600}
+.repeat .rep{font-size:12px;font-weight:700;color:var(--lime)}
+.kv{display:flex;flex-direction:column;gap:2px}
+.toggle{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:44px}
+.toggle>span{display:flex;flex-direction:column;gap:2px}
+.toggle input{width:24px;height:24px;accent-color:var(--lime);flex-shrink:0}
+details summary{font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;min-height:24px}
+pre{margin:10px 0 0;white-space:pre-wrap;font:12px/1.5 ui-monospace,Menlo,monospace;color:var(--soft)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.stat{gap:4px}
+.stat input{background:transparent;border:0;border-bottom:1px solid var(--line);font-family:var(--display);font-size:30px;font-weight:700;width:100%;padding:0 0 2px;color:var(--text)}
+.big{font-family:var(--display);font-size:30px;font-weight:700;line-height:1.2}
+.big small{font-size:15px;color:var(--muted)}
+.zone{flex-direction:row;align-items:center;gap:12px;padding:10px 12px}
+.zbadge{width:36px;height:36px;border-radius:10px;color:#0E1116;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.zr{font-family:var(--display);font-size:20px;font-weight:600;white-space:nowrap}
+.grow{flex:1;min-width:0}
+.warn-card{outline:1px solid #6A4A22}
+.tip{background:#1D2414;outline:1px solid #3A4A1F;gap:4px}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);font-weight:500}
+.field input,.sched select{height:46px;border-radius:12px;border:1px solid var(--line);background:var(--card2);padding:0 12px;color:var(--text);font-size:16px;width:100%;min-width:0}
+input[type=date]{-webkit-appearance:none;appearance:none}
+.sched{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:10px;font-size:13px;color:var(--muted);font-weight:600}
+.steps-help{margin:0;padding-left:18px;color:var(--soft);display:flex;flex-direction:column;gap:4px}
+nav{position:fixed;left:0;right:0;bottom:0;background:rgba(14,17,22,.96);border-top:1px solid var(--hair);padding:6px 8px calc(env(safe-area-inset-bottom) + 6px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+nav button{height:54px;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);font-size:11px;font-weight:600}
+nav button[aria-current="page"]{color:var(--lime)}
+nav>*{max-width:120px;width:100%;justify-self:center}
+.toast{position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom) + 80px);max-width:448px;margin:0 auto;background:#F2F4F7;color:#0E1116;padding:12px 14px;border-radius:14px;font-size:14px;font-weight:500;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;z-index:5}
+.toast.show{opacity:1;transform:none}
+.toast.err{background:#FFD9DA}
+</style>
+</head>
+<body>
+<main id="view" aria-live="polite"></main>
+<nav aria-label="Main">
+  <button data-action="go" data-view="today"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Today</button>
+  <button data-action="go" data-view="plan"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Plan</button>
+  <button data-action="go" data-view="zones"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg>Zones</button>
+  <button data-action="go" data-view="settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
+</nav>
+<div id="toast" class="toast" role="status"></div>
+<script>
+/* Pace core: dates, zones, readiness, plan generation, adaptation and
+   Intervals.icu workout text. Pure functions only (no DOM, no network). */
+
+const Z_COLORS = ['#8FA3BF', '#4EA8FF', '#3FD08A', '#FF9F43', '#FF5A5F'];
+const Z_NAMES = ['Recovery', 'Endurance', 'Tempo', 'Threshold', 'Max effort'];
+const Z_USES = ['Warm-ups, cool-downs, recoveries', 'Most runs and rides live here',
+  'Comfortably hard, used sparingly', 'Intervals, 3–8 min repeats', 'Short all-out efforts, rarely'];
+const Z_PCT = [0.6, 0.7, 0.8, 0.9, 1.0]; // upper bound of each zone, % of max HR
+
+const SESSION_TYPES = {
+  rest: { label: 'Rest', sport: null },
+  easyRun: { label: 'Easy run', sport: 'Run' },
+  qualityRun: { label: 'Run workout', sport: 'Run' },
+  longRun: { label: 'Long run', sport: 'Run' },
+  easyRide: { label: 'Endurance ride', sport: 'Ride' },
+  longRide: { label: 'Long ride', sport: 'Ride' },
+  liftA: { label: 'Dumbbell strength A', sport: 'WeightTraining' },
+  liftB: { label: 'Dumbbell strength B', sport: 'WeightTraining' },
+};
+
+const DAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+const DAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+const DEFAULT_SCHEDULE = {
+  mon: 'liftA', tue: 'easyRun', wed: 'easyRide', thu: 'liftB',
+  fri: 'rest', sat: 'qualityRun', sun: 'longRide',
+};
+
+const LIFTS = {
+  liftA: {
+    focus: 'Lower body + core',
+    moves: [
+      ['Goblet squat', '10'],
+      ['Dumbbell Romanian deadlift', '10'],
+      ['Reverse lunge', '8 each leg'],
+      ['Single-leg glute bridge', '12 each leg'],
+      ['Dead bug', '10 each side'],
+    ],
+  },
+  liftB: {
+    focus: 'Upper body + core',
+    moves: [
+      ['Dumbbell floor press', '10'],
+      ['One-arm dumbbell row', '10 each arm'],
+      ['Standing overhead press', '8'],
+      ['Dumbbell biceps curl', '12'],
+      ['Side plank', '3 holds each side'],
+    ],
+  },
+};
+
+const SPORT_MATCH = {
+  Run: ['Run', 'TrailRun', 'VirtualRun', 'Treadmill'],
+  Ride: ['Ride', 'VirtualRide', 'GravelRide', 'MountainBikeRide', 'EBikeRide', 'EMountainBikeRide'],
+  WeightTraining: ['WeightTraining', 'Workout', 'Crossfit', 'HighIntensityIntervalTraining'],
+};
+
+/* ---------- dates (local, YYYY-MM-DD strings) ---------- */
+function pad(n) { return String(n).padStart(2, '0'); }
+function ymd(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+function parseYmd(s) { const [y, m, d] = s.slice(0, 10).split('-').map(Number); return new Date(y, m - 1, d); }
+function addDays(s, n) { const d = parseYmd(s); d.setDate(d.getDate() + n); return ymd(d); }
+function daysBetween(a, b) { return Math.round((parseYmd(b) - parseYmd(a)) / 86400000); }
+function mondayOf(s) { const d = parseYmd(s); const dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); return ymd(d); }
+function dayIndex(s) { return (parseYmd(s).getDay() + 6) % 7; } // 0 = Monday
+
+/* ---------- zones ---------- */
+function estMaxHr(age) { return Math.round(220 - (Number(age) || 36)); }
+function maxHrFor(settings) { return Number(settings.maxHr) > 0 ? Number(settings.maxHr) : estMaxHr(settings.age); }
+function zoneTops(maxHr) { return Z_PCT.map(p => Math.round(maxHr * p)); }
+function zoneRanges(maxHr) {
+  const tops = zoneTops(maxHr);
+  return tops.map((top, i) => ({ zone: i + 1, lo: i === 0 ? Math.round(maxHr * 0.5) : tops[i - 1], hi: top }));
+}
+
+/* ---------- formatting ---------- */
+function fmtDur(sec) {
+  const m = Math.floor(sec / 60), s = Math.round(sec % 60);
+  if (m >= 60) { const h = Math.floor(m / 60), mm = m % 60; return h + 'h' + (mm ? ' ' + mm + 'm' : ''); }
+  return s ? m + ':' + pad(s) : m + ' min';
+}
+function fmtClock(sec) { const m = Math.floor(sec / 60), s = Math.round(sec % 60); return m + ':' + pad(s); }
+function icuDur(sec) {
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = Math.round(sec % 60);
+  return (h ? h + 'h' : '') + (m ? m + 'm' : '') + (s ? s + 's' : '') || '0s';
+}
+function zoneLabel(z) { if (!z) return ''; return z[0] === z[1] ? 'Zone ' + z[0] : 'Zone ' + z[0] + '–' + z[1]; }
+function zoneBpm(z, maxHr) {
+  if (!z) return '';
+  const r = zoneRanges(maxHr);
+  const lo = r[z[0] - 1].lo, hi = r[z[1] - 1].hi;
+  return z[0] === 1 ? 'under ' + hi + ' bpm' : lo + '–' + hi + ' bpm';
+}
+function round5(min) { return Math.max(5, Math.round(min / 5) * 5); }
+
+/* ---------- session model ----------
+   session = { date, type, sport, name, summary, hard, blocks: [step | {repeat, label, steps}],
+               notes: [], adjusted: bool, focus? }
+   step = { label, sec, zone: [lo, hi] | null, kind } */
+function totalSec(blocks) {
+  return blocks.reduce((t, b) => t + (b.repeat ? b.repeat * b.steps.reduce((a, s) => a + s.sec, 0) : b.sec), 0);
+}
+function flatSteps(blocks) {
+  const out = [];
+  blocks.forEach(b => {
+    if (b.repeat) { for (let i = 0; i < b.repeat; i++) b.steps.forEach(s => out.push(s)); }
+    else out.push(b);
+  });
+  return out;
+}
+function intensitySplit(blocks) {
+  let easy = 0, hard = 0;
+  flatSteps(blocks).forEach(s => { if (!s.zone) return; if (s.zone[1] >= 3) hard += s.sec; else easy += s.sec; });
+  return { easy, hard };
+}
+
+/* ---------- plan position ---------- */
+function weekInfo(planStart, date) {
+  const start = mondayOf(planStart || date);
+  let w = Math.floor(daysBetween(start, date) / 7) + 1;
+  if (w < 1) w = 1;
+  const block = Math.floor((w - 1) / 12);
+  const wib = ((w - 1) % 12) + 1;
+  const deload = wib % 4 === 0;
+  const phase = wib <= 4 ? 'Base building' : wib <= 8 ? 'Build' : 'Sharpen';
+  return { week: w, block, wib, deload, phase, monday: addDays(start, (w - 1) * 7) };
+}
+function volumeFactor(wi) {
+  const progressiveBefore = (wi.wib - 1) - Math.floor((wi.wib - 1) / 4);
+  let f = Math.pow(1.08, progressiveBefore) * Math.pow(1.12, wi.block);
+  if (wi.deload) f *= 0.7;
+  return f;
+}
+
+/* ---------- builders ---------- */
+function easyZone(settings) { return settings.easyCeiling === false ? [2, 2] : [1, 2]; }
+
+function buildEndurance(type, date, wi, factor, settings) {
+  const base = { easyRun: 25, longRun: 40, easyRide: 40, longRide: 55 }[type];
+  const min = round5(base * factor);
+  const sport = SESSION_TYPES[type].sport;
+  const z = easyZone(settings);
+  const notes = [];
+  if (sport === 'Run' && wi.block === 0 && wi.wib <= 4) notes.push('Walk breaks are fine. Staying under the Zone 2 ceiling is the goal.');
+  return {
+    date, type, sport, hard: false,
+    name: SESSION_TYPES[type].label,
+    summary: min + ' min · ' + zoneLabel(z),
+    blocks: [{ label: sport === 'Ride' ? 'Steady' : 'Easy', sec: min * 60, zone: z, kind: 'easy' }],
+    notes,
+  };
+}
+
+function buildQualityRun(date, wi, settings) {
+  const z = easyZone(settings);
+  const warm = { label: 'Warm up', sec: 600, zone: [2, 2], kind: 'warm' };
+  const cool = { label: 'Cool down', sec: 480, zone: [1, 1], kind: 'cool' };
+  let reps, work, rec, name;
+  if (wi.deload || wi.wib <= 3) {
+    reps = wi.deload ? 4 : [3, 4, 5][wi.wib - 1];
+    work = { label: 'Pick up', sec: 60, zone: [3, 3], kind: 'work' };
+    rec = { label: 'Easy', sec: 120, zone: z, kind: 'rec' };
+    name = 'Run · ' + reps + ' × 1 min pickups';
+  } else if (wi.wib <= 7) {
+    reps = [3, 4, 5][wi.wib - 5];
+    work = { label: 'Work', sec: 180, zone: [4, 4], kind: 'work' };
+    rec = { label: 'Recover', sec: 120, zone: [1, 1], kind: 'rec' };
+    name = 'Run · ' + reps + ' × 3 min';
+  } else {
+    reps = [3, 3, 4][wi.wib - 9];
+    work = { label: 'Work', sec: 300, zone: [4, 4], kind: 'work' };
+    rec = { label: 'Recover', sec: 180, zone: [1, 1], kind: 'rec' };
+    name = 'Run · ' + reps + ' × 5 min';
+  }
+  reps = Math.min(6, reps + wi.block);
+  const s = {
+    date, type: 'qualityRun', sport: 'Run', hard: true, name: name.replace(/\d+ ×/, reps + ' ×'),
+    blocks: [warm, { repeat: reps, label: 'Intervals', steps: [work, rec] }, cool], notes: [],
+  };
+  s.summary = fmtDur(totalSec(s.blocks)) + ' · ' + zoneLabel(work.zone) + ' repeats';
+  return s;
+}
+
+function buildLift(type, date, wi) {
+  const sets = wi.deload ? 2 : (wi.block === 0 && wi.wib <= 2 ? 2 : 3);
+  const lift = LIFTS[type];
+  const blocks = [{ label: 'Warm up: easy movement', sec: 300, zone: null, kind: 'warm' }];
+  lift.moves.forEach(([move, reps]) => blocks.push({ label: move + ' ' + sets + '×' + reps, sec: sets * 120, zone: null, kind: 'lift', move, sets, reps }));
+  return {
+    date, type, sport: 'WeightTraining', hard: false,
+    name: SESSION_TYPES[type].label, focus: lift.focus,
+    summary: lift.focus + ' · ' + sets + ' sets',
+    blocks,
+    notes: ['When you hit every rep on every set, go up 5 lb next time.'],
+  };
+}
+
+function buildSession(type, date, settings, opts) {
+  opts = opts || {};
+  const wi = weekInfo(settings.planStart, date);
+  let factor = volumeFactor(wi);
+  if (opts.holdProgression && !wi.deload && wi.wib > 1) factor = volumeFactor(Object.assign({}, wi, { wib: wi.wib - 1, deload: (wi.wib - 1) % 4 === 0 }));
+  let s;
+  if (!type || type === 'rest') s = { date, type: 'rest', sport: null, hard: false, name: 'Rest', summary: 'Optional 10 min mobility', blocks: [], notes: [] };
+  else if (type === 'qualityRun') s = buildQualityRun(date, wi, settings);
+  else if (type === 'liftA' || type === 'liftB') s = buildLift(type, date, wi);
+  else s = buildEndurance(type, date, wi, factor, settings);
+  s.week = wi;
+  s.adjusted = false;
+  return s;
+}
+
+/* ---------- readiness ---------- */
+function mean(a) { return a.length ? a.reduce((x, y) => x + y, 0) / a.length : null; }
+function sd(a) { const m = mean(a); return a.length > 1 ? Math.sqrt(a.reduce((t, x) => t + (x - m) * (x - m), 0) / (a.length - 1)) : null; }
+
+function readiness(wellness, today) {
+  const rows = (wellness || []).filter(r => r && r.id && r.id <= today).sort((a, b) => a.id < b.id ? -1 : 1);
+  if (!rows.length) return null;
+  const last = rows[rows.length - 1];
+  if (daysBetween(last.id, today) > 1) return null;
+  const prior = rows.filter(r => r.id < last.id);
+  const vals = (key, days) => prior.filter(r => daysBetween(r.id, last.id) <= days && r[key] != null && r[key] > 0).map(r => r[key]);
+
+  let score = 70; const reasons = []; const metrics = {};
+  if (last.hrv) {
+    const b7 = mean(vals('hrv', 7)), b28 = vals('hrv', 28), m28 = mean(b28);
+    // Day-to-day HRV normally swings ~8%; floor the spread so a very steady
+    // baseline doesn't turn a small dip into a big score drop.
+    const s28 = m28 ? Math.max(sd(b28) || 0, m28 * 0.08) : null;
+    metrics.hrv = { value: Math.round(last.hrv), vs7: b7 ? (last.hrv - b7) / b7 : null };
+    if (m28 && s28 && b28.length >= 5) {
+      const z = (last.hrv - m28) / s28;
+      score += Math.max(-25, Math.min(15, z * 10));
+      if (metrics.hrv.vs7 != null && Math.abs(metrics.hrv.vs7) >= 0.05) reasons.push('HRV ' + Math.round(Math.abs(metrics.hrv.vs7) * 100) + '% ' + (metrics.hrv.vs7 < 0 ? 'below' : 'above') + ' your 7-day average');
+    }
+  }
+  if (last.restingHR) {
+    const b7 = mean(vals('restingHR', 7));
+    metrics.rhr = { value: Math.round(last.restingHR), delta: b7 ? last.restingHR - b7 : null };
+    if (b7) {
+      const d = last.restingHR - b7;
+      score -= Math.max(-6, Math.min(20, d * 3));
+      if (d >= 3) reasons.push('Resting HR ' + Math.round(d) + ' bpm above normal');
+    }
+  }
+  if (last.sleepSecs) {
+    const h = last.sleepSecs / 3600;
+    metrics.sleep = { value: h };
+    if (h < 6) { score -= 15; reasons.push('Short sleep (' + h.toFixed(1) + ' h)'); }
+    else if (h < 7) score -= 5;
+    else if (h >= 8) score += 5;
+  }
+  if (last.ctl != null && last.atl != null) {
+    const form = last.ctl - last.atl;
+    metrics.form = { value: Math.round(form), ctl: Math.round(last.ctl), atl: Math.round(last.atl) };
+    if (form < -25) { score -= 10; reasons.push('Fatigue is high relative to fitness'); }
+    else if (form < -15) score -= 5;
+    else if (form > 5) score += 5;
+  }
+  if (!metrics.hrv && !metrics.rhr && !metrics.sleep) return null;
+  score = Math.round(Math.max(5, Math.min(100, score)));
+  const band = score >= 65 ? 'go' : score >= 55 ? 'trim' : score >= 40 ? 'easy' : 'rest';
+  const headline = { go: 'Ready, go as planned', trim: 'A little off, hard work trimmed', easy: 'Take it easy today', rest: 'Rest and recover today' }[band];
+  return { score, band, headline, reasons, metrics, date: last.id };
+}
+
+/* ---------- adaptation ---------- */
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+function adapt(session, r, settings) {
+  if (!r || session.type === 'rest' || r.band === 'go') return session;
+  const s = clone(session);
+  const why = r.reasons.length ? r.reasons[0] : 'Readiness ' + r.score;
+  const z = easyZone(settings);
+  if (r.band === 'rest') {
+    if (s.sport === 'WeightTraining') {
+      return Object.assign(s, { type: 'rest', sport: null, name: 'Rest (was ' + session.name + ')', summary: 'Optional 10 min mobility', blocks: [], hard: false, adjusted: true,
+        notes: [why + ', so strength moves to another day.'] });
+    }
+    return Object.assign(s, { name: 'Recovery ' + (s.sport === 'Ride' ? 'spin' : 'walk or jog'), summary: '20 min · Zone 1', hard: false, adjusted: true,
+      blocks: [{ label: 'Recovery', sec: 1200, zone: [1, 1], kind: 'easy' }],
+      notes: [why + ', so today is an optional 20 min in Zone 1.'] });
+  }
+  if (s.sport === 'WeightTraining') {
+    if (r.band === 'easy') {
+      s.blocks.forEach(b => { if (b.kind === 'lift' && b.sets > 2) { b.sets -= 1; b.sec = b.sets * 120; b.label = b.move + ' ' + b.sets + '×' + b.reps; } });
+      s.summary = s.focus + ' · 2 sets';
+      s.adjusted = true;
+      s.notes.unshift(why + ', so one set comes off each exercise.');
+    }
+    return s;
+  }
+  if (s.hard) {
+    const rep = s.blocks.find(b => b.repeat);
+    if (r.band === 'trim' && rep) {
+      const before = rep.repeat;
+      rep.repeat = Math.max(2, rep.repeat - 1);
+      rep.steps[1].sec += 60;
+      s.name = s.name.replace(/\d+ ×/, rep.repeat + ' ×');
+      s.summary = fmtDur(totalSec(s.blocks)) + ' · ' + zoneLabel(rep.steps[0].zone) + ' repeats';
+      s.adjusted = true;
+      s.notes.unshift(why + ', so we cut ' + before + ' repeats to ' + rep.repeat + ' and added a minute to each recovery.');
+      return s;
+    }
+    const min = round5((totalSec(s.blocks) / 60) * 0.8);
+    return Object.assign(s, { name: 'Easy run (swapped)', summary: min + ' min · ' + zoneLabel(z), hard: false, adjusted: true,
+      blocks: [{ label: 'Easy', sec: min * 60, zone: z, kind: 'easy' }],
+      notes: [why + ', so the intervals became an easy Zone 2 run.'] });
+  }
+  if (r.band === 'easy') {
+    const b = s.blocks[0];
+    const min = round5((b.sec / 60) * 0.8);
+    b.sec = min * 60;
+    s.summary = min + ' min · ' + zoneLabel(b.zone);
+    s.adjusted = true;
+    s.notes.unshift(why + ', so this is 20% shorter.');
+  }
+  return s;
+}
+
+/* ---------- completion ---------- */
+function activitiesByDate(acts) {
+  const m = {};
+  (acts || []).forEach(a => { const d = (a.start_date_local || '').slice(0, 10); if (!d) return; (m[d] = m[d] || []).push(a.type); });
+  return m;
+}
+function isDone(session, actMap) {
+  if (!session.sport) return false;
+  const types = actMap[session.date] || [];
+  return types.some(t => (SPORT_MATCH[session.sport] || []).includes(t));
+}
+function weekCompletion(settings, monday, actMap, upTo) {
+  let planned = 0, done = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = addDays(monday, i);
+    if (d >= upTo) break;
+    const type = (settings.schedule || DEFAULT_SCHEDULE)[DAY_KEYS[i]];
+    if (!type || type === 'rest') continue;
+    planned++;
+    if (isDone({ date: d, sport: SESSION_TYPES[type].sport }, actMap)) done++;
+  }
+  return { planned, done, rate: planned ? done / planned : 1 };
+}
+
+/* ---------- the plan ---------- */
+function planDays(settings, from, n, ctx) {
+  ctx = ctx || {};
+  const today = ctx.today || from;
+  const actMap = activitiesByDate(ctx.activities);
+  const sched = settings.schedule || DEFAULT_SCHEDULE;
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    const date = addDays(from, i);
+    const wi = weekInfo(settings.planStart, date);
+    let hold = false;
+    if (ctx.activities && wi.week > 1) {
+      const prev = weekCompletion(settings, addDays(wi.monday, -7), actMap, wi.monday);
+      hold = prev.planned > 0 && prev.rate < 0.6;
+    }
+    let s = buildSession(sched[DAY_KEYS[dayIndex(date)]], date, settings, { holdProgression: hold });
+    s.held = hold;
+    if (date === today) s = adapt(s, ctx.readiness, settings);
+    s.done = isDone(s, actMap);
+    s.status = s.type === 'rest' ? 'rest' : s.done ? 'done' : date < today ? 'missed' : date === today ? 'today' : 'upcoming';
+    out.push(s);
+  }
+  return out;
+}
+
+function planNotes(days, ctx) {
+  const notes = [];
+  days.forEach(d => { if (d.adjusted && d.notes[0]) notes.push({ tone: 'warn', text: DAY_SHORT[dayIndex(d.date)] + ': ' + d.notes[0] }); });
+  const first = days[0];
+  if (first && first.week.deload) notes.push({ tone: 'info', text: 'Recovery week: volume drops about 30% so the last three weeks sink in.' });
+  else if (first && first.week.wib % 4 === 3) notes.push({ tone: 'info', text: 'Next week is a recovery week with about 30% less volume.' });
+  if (days.some(d => d.held)) notes.push({ tone: 'warn', text: 'Last week was short on sessions, so volume holds instead of growing.' });
+  else if (first && !first.week.deload && first.week.wib > 1) notes.push({ tone: 'good', text: 'Endurance time grows about 8% this week, under the 10% cap.' });
+  const missed = days.filter(d => d.status === 'missed');
+  if (missed.length) notes.push({ tone: 'info', text: missed.length + ' missed session' + (missed.length > 1 ? 's' : '') + ' this week. They are not stacked onto other days.' });
+  return notes;
+}
+
+/* ---------- Intervals.icu ---------- */
+function icuStep(s) {
+  const target = s.zone ? (s.zone[0] === s.zone[1] ? 'Z' + s.zone[0] + ' HR' : 'Z' + s.zone[0] + '-Z' + s.zone[1] + ' HR') : '';
+  return ('- ' + s.label + ' ' + icuDur(s.sec) + ' ' + target).trim();
+}
+function icuText(session) {
+  const parts = [];
+  if (session.type === 'liftA' || session.type === 'liftB') parts.push(session.focus + '. Each step is all sets of one exercise, rest included.\n');
+  session.blocks.forEach(b => {
+    if (b.repeat) parts.push('\n' + b.label + ' ' + b.repeat + 'x\n' + b.steps.map(icuStep).join('\n') + '\n');
+    else parts.push(icuStep(b));
+  });
+  return parts.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+function externalId(date) { return 'pace-' + date; }
+function toEvent(session) {
+  return {
+    category: 'WORKOUT',
+    start_date_local: session.date + 'T00:00:00',
+    type: session.sport,
+    name: session.name,
+    description: icuText(session),
+    external_id: externalId(session.date),
+  };
+}
+
+const PaceCore = {
+  Z_COLORS, Z_NAMES, Z_USES, SESSION_TYPES, DAY_KEYS, DAY_SHORT, DEFAULT_SCHEDULE, LIFTS,
+  ymd, parseYmd, addDays, daysBetween, mondayOf, dayIndex,
+  estMaxHr, maxHrFor, zoneTops, zoneRanges, fmtDur, fmtClock, icuDur, zoneLabel, zoneBpm,
+  totalSec, flatSteps, intensitySplit, weekInfo, volumeFactor, buildSession, readiness, adapt,
+  activitiesByDate, planDays, planNotes, icuText, toEvent, externalId,
+};
+if (typeof module !== 'undefined') module.exports = PaceCore;
+
+</script>
+<script>
+/* Pace UI: state, Intervals.icu calls and rendering. Depends on PaceCore. */
+(function () {
+  const C = PaceCore;
+  const LS_KEY = 'pace.v1';
+  const BASE = 'https://intervals.icu/api/v1';
+
+  const DEFAULTS = {
+    apiKey: '', athleteId: '0', age: 36, maxHr: '', planStart: '',
+    schedule: Object.assign({}, C.DEFAULT_SCHEDULE), easyCeiling: true, autoSend: true, lastSent: '',
+  };
+
+  function loadSettings() {
+    let s = {};
+    try { s = JSON.parse(localStorage.getItem(LS_KEY) || '{}') || {}; } catch (e) { s = {}; }
+    const out = Object.assign({}, DEFAULTS, s);
+    out.schedule = Object.assign({}, C.DEFAULT_SCHEDULE, s.schedule || {});
+    return out;
+  }
+  function saveSettings() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
+
+  let S = loadSettings();
+  let D = { wellness: [], activities: [], events: [], sport: [], loaded: false, loading: false, error: '', athlete: null };
+  const UI = { view: 'today', detail: null, weekOffset: 0, sending: false, syncingZones: false };
+
+  const today = () => C.ymd(new Date());
+  const isDemo = () => !S.apiKey;
+  const athleteId = () => (S.athleteId || '0').trim() || '0';
+  const demoStart = () => C.addDays(C.mondayOf(today()), -14);
+  function settings() {
+    return Object.assign({}, S, { planStart: isDemo() ? demoStart() : (S.planStart || C.mondayOf(today())) });
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+  /* ---------------- network ---------------- */
+  async function api(path, opts) {
+    opts = opts || {};
+    let res;
+    try {
+      res = await fetch(BASE + path, {
+        method: opts.method || 'GET',
+        headers: Object.assign({ Authorization: 'Basic ' + btoa('API_KEY:' + S.apiKey.trim()), Accept: 'application/json' },
+          opts.body ? { 'Content-Type': 'application/json' } : {}),
+        body: opts.body ? JSON.stringify(opts.body) : undefined,
+      });
+    } catch (e) {
+      throw new Error("Couldn't reach Intervals.icu. Check your connection and try again.");
+    }
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) throw new Error('Intervals.icu rejected the API key or athlete ID (HTTP ' + res.status + ').');
+      let t = ''; try { t = (await res.text()).slice(0, 140); } catch (e) { /* ignore */ }
+      throw new Error('Intervals.icu error ' + res.status + (t ? ': ' + t : ''));
+    }
+    if (res.status === 204) return null;
+    const ct = res.headers.get('content-type') || '';
+    return ct.includes('json') ? res.json() : res.text();
+  }
+
+  function demoData() {
+    const t = today(), wellness = [], activities = [];
+    for (let i = 30; i >= 1; i--) {
+      wellness.push({ id: C.addDays(t, -i), hrv: 49 + ((i * 7) % 6) - 2, restingHR: 54 + (i % 3 === 0 ? 1 : 0), sleepSecs: (7 + (i % 4) * 0.2) * 3600, ctl: 17 + (30 - i) * 0.05, atl: 19 + (i % 5) });
+    }
+    wellness.push({ id: t, hrv: 46, restingHR: 56, sleepSecs: 7.1 * 3600, ctl: 18.5, atl: 22.5 });
+    const st = Object.assign({}, S, { planStart: demoStart() });
+    const mon = C.mondayOf(t);
+    for (let d = C.addDays(mon, -7); d < t; d = C.addDays(d, 1)) {
+      const type = st.schedule[C.DAY_KEYS[C.dayIndex(d)]];
+      const sport = C.SESSION_TYPES[type] && C.SESSION_TYPES[type].sport;
+      if (sport) activities.push({ start_date_local: d + 'T07:00:00', type: sport });
+    }
+    return { wellness, activities, events: [], sport: [], loaded: true, loading: false, error: '', athlete: null };
+  }
+
+  async function loadAll(opts) {
+    opts = opts || {};
+    if (isDemo()) { D = demoData(); render(); return; }
+    D.loading = true; D.error = ''; render();
+    const t = today(), id = athleteId();
+    const r = await Promise.allSettled([
+      api('/athlete/' + id + '/wellness?oldest=' + C.addDays(t, -35) + '&newest=' + t),
+      api('/athlete/' + id + '/activities?oldest=' + C.addDays(C.mondayOf(t), -7) + '&newest=' + C.addDays(t, 1)),
+      api('/athlete/' + id + '/events?oldest=' + C.addDays(t, -7) + '&newest=' + C.addDays(t, 13) + '&category=WORKOUT'),
+      api('/athlete/' + id + '/sport-settings'),
+    ]);
+    const val = (x, fb) => (x.status === 'fulfilled' && Array.isArray(x.value)) ? x.value : fb;
+    D = { wellness: val(r[0], []), activities: val(r[1], []), events: val(r[2], []), sport: val(r[3], []),
+      loaded: true, loading: false, athlete: D.athlete, error: '' };
+    const failed = r.filter(x => x.status === 'rejected');
+    if (failed.length === r.length) D.error = failed[0].reason.message;
+    else if (failed.length) D.error = 'Some data did not load: ' + failed[0].reason.message;
+    render();
+    if (!D.error && S.autoSend && !opts.skipAuto && (S.lastSent || '').slice(0, 10) !== t) sendWeek({ quiet: true });
+  }
+
+  /* ---------------- plan helpers ---------------- */
+  function ready() { return C.readiness(D.wellness, today()); }
+  function plan(from, n) {
+    return C.planDays(settings(), from, n, { today: today(), readiness: ready(), activities: D.loaded ? D.activities : null });
+  }
+  function sessionFor(date) { return plan(date, 1)[0]; }
+  function sentEvent(date) { return (D.events || []).find(e => e.external_id === C.externalId(date)); }
+
+  /* ---------------- actions ---------------- */
+  async function sendWeek(o) {
+    o = o || {};
+    if (isDemo()) { toast('Add your Intervals.icu API key in Settings to send workouts.'); return; }
+    if (UI.sending) return;
+    UI.sending = true; render();
+    try {
+      const t = today(), id = athleteId();
+      const days = plan(t, 7).filter(d => d.type !== 'rest' && d.sport);
+      const events = days.map(C.toEvent);
+      const existing = await api('/athlete/' + id + '/events?oldest=' + t + '&newest=' + C.addDays(t, 6) + '&category=WORKOUT') || [];
+      const keep = new Set(events.map(e => e.external_id));
+      const stale = existing.filter(e => e.external_id && e.external_id.indexOf('pace-') === 0 && !keep.has(e.external_id));
+      for (const e of stale) await api('/athlete/' + id + '/events/' + e.id, { method: 'DELETE' });
+      if (events.length) await api('/athlete/' + id + '/events/bulk?upsert=true', { method: 'POST', body: events });
+      S.lastSent = new Date().toISOString(); saveSettings();
+      toast((o.quiet ? 'Watch updated: ' : 'Sent ') + events.length + ' workouts for the next 7 days. Sync Garmin Connect to load them on your fenix.');
+      UI.sending = false;
+      await loadAll({ skipAuto: true });
+    } catch (err) {
+      toast(err.message, true);
+    } finally {
+      UI.sending = false; render();
+    }
+  }
+
+  async function syncZones() {
+    if (isDemo()) { toast('Add your Intervals.icu API key in Settings first.'); return; }
+    const targets = (D.sport || []).filter(s => (s.types || []).some(t => t === 'Run' || t === 'Ride'));
+    if (!targets.length) { toast('No Run or Ride sport settings found in Intervals.icu.', true); return; }
+    UI.syncingZones = true; render();
+    const max = C.maxHrFor(S), tops = C.zoneTops(max);
+    try {
+      for (const s of targets) {
+        await api('/athlete/' + athleteId() + '/sport-settings/' + s.id, { method: 'PUT', body: { max_hr: max, hr_zones: tops, hr_zone_names: C.Z_NAMES } });
+      }
+      toast('Zones copied to Intervals.icu for ' + targets.map(s => s.types[0]).join(' and ') + '.');
+      UI.syncingZones = false;
+      await loadAll({ skipAuto: true });
+    } catch (err) {
+      toast(err.message + ' You can enter the zones by hand in Intervals.icu settings.', true);
+    } finally { UI.syncingZones = false; render(); }
+  }
+
+  async function testConnection() {
+    if (isDemo()) { toast('Paste your API key first.'); return; }
+    try {
+      const a = await api('/athlete/' + athleteId());
+      D.athlete = a;
+      toast('Connected' + (a && a.name ? ' as ' + a.name : '') + '.');
+      await loadAll();
+    } catch (err) { toast(err.message, true); }
+  }
+
+  /* ---------------- toast ---------------- */
+  let toastTimer;
+  function toast(msg, isErr) {
+    const el = document.getElementById('toast');
+    el.textContent = msg; el.className = 'toast show' + (isErr ? ' err' : '');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.className = 'toast'; }, isErr ? 7000 : 4500);
+  }
+
+  /* ---------------- icons ---------------- */
+  const P = 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+  const ICON = {
+    Run: '<svg width="22" height="22" viewBox="0 0 24 24" ' + P + '><circle cx="14" cy="4" r="2"/><path d="M7 21l3-6 3 2 2 5"/><path d="M6 12l3-4 4 1 3 3 3 1"/></svg>',
+    Ride: '<svg width="22" height="22" viewBox="0 0 24 24" ' + P + '><circle cx="6" cy="17" r="3.5"/><circle cx="18" cy="17" r="3.5"/><path d="M6 17l4-8h5l3 8"/><path d="M10 9l2 8"/><path d="M14 6h3"/></svg>',
+    WeightTraining: '<svg width="22" height="22" viewBox="0 0 24 24" ' + P + '><path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12"/></svg>',
+    rest: '<svg width="22" height="22" viewBox="0 0 24 24" ' + P + '><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
+    sync: '<svg width="20" height="20" viewBox="0 0 24 24" ' + P + '><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>',
+    back: '<svg width="20" height="20" viewBox="0 0 24 24" ' + P + '><path d="M15 18l-6-6 6-6"/></svg>',
+    watch: '<svg width="18" height="18" viewBox="0 0 24 24" ' + P + '><circle cx="12" cy="12" r="6"/><path d="M9 3h6M9 21h6M12 9v3l2 1"/></svg>',
+    check: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>',
+    info: '<svg width="18" height="18" viewBox="0 0 24 24" ' + P + '><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>',
+  };
+  const iconFor = s => ICON[s.sport] || ICON.rest;
+
+  /* ---------------- pieces ---------------- */
+  const ZH = [25, 40, 60, 80, 100];
+  function shapeBar(s, h) {
+    const steps = C.flatSteps(s.blocks).filter(x => x.zone);
+    if (!steps.length) return '';
+    return '<div class="shape" style="height:' + h + 'px" role="img" aria-label="Workout intensity by step">' +
+      steps.map(x => '<div style="flex:' + x.sec + ';height:' + ZH[x.zone[1] - 1] + '%;background:' + C.Z_COLORS[x.zone[1] - 1] + '"></div>').join('') + '</div>';
+  }
+  function banner() {
+    if (isDemo()) return '<div class="banner"><strong>Demo mode.</strong> This is sample data. <button class="link" data-action="go" data-view="settings">Connect Intervals.icu</button></div>';
+    if (D.error) return '<div class="banner err">' + esc(D.error) + '</div>';
+    return '';
+  }
+  function header(title, sub, right) {
+    return '<header class="top"><div><div class="sub">' + esc(sub) + '</div><h1>' + esc(title) + '</h1></div>' + (right || '') + '</header>';
+  }
+  function fmtDate(s, long) {
+    return C.parseYmd(s).toLocaleDateString(undefined, long ? { weekday: 'long', month: 'short', day: 'numeric' } : { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+  function sentLine(date) {
+    if (isDemo()) return 'Demo: connect Intervals.icu to send this to your watch';
+    if (sentEvent(date)) return 'On Intervals.icu · syncs to your fenix through Garmin Connect';
+    return 'Not sent yet';
+  }
+
+  /* ---------------- views ---------------- */
+  function viewToday() {
+    const t = today();
+    const r = ready();
+    const s = sessionFor(t);
+    const mon = C.mondayOf(t);
+    const week = plan(mon, 7);
+    const refresh = '<button class="icon-btn" data-action="refresh" aria-label="Refresh data">' + ICON.sync + '</button>';
+    let h = header('Today', fmtDate(t, true), refresh) + banner();
+
+    if (r) {
+      const m = r.metrics;
+      const pct = r.score;
+      const ringColor = r.band === 'go' ? 'var(--lime)' : r.band === 'trim' ? 'var(--amber)' : 'var(--red)';
+      const cell = (label, val, sub, warn) => '<div class="metric"><span class="ml">' + label + '</span><span class="mv">' + val + '</span><span class="ms' + (warn ? ' warn' : '') + '">' + sub + '</span></div>';
+      h += '<section class="card ready"><div class="ring" style="background:conic-gradient(' + ringColor + ' ' + pct + '%, var(--line) 0)"><div><b>' + r.score + '</b><span>READY</span></div></div>' +
+        '<div class="ready-body"><div class="ready-head">' + esc(r.headline) + '</div><div class="metrics">' +
+        (m.hrv ? cell('HRV', m.hrv.value + ' ms', m.hrv.vs7 == null ? '—' : (m.hrv.vs7 >= 0 ? '+' : '−') + Math.abs(Math.round(m.hrv.vs7 * 100)) + '% vs 7d', m.hrv.vs7 != null && m.hrv.vs7 <= -0.05) : cell('HRV', '—', 'no data')) +
+        (m.rhr ? cell('Rest HR', m.rhr.value, m.rhr.delta == null ? '—' : m.rhr.delta >= 3 ? '+' + Math.round(m.rhr.delta) + ' bpm' : 'normal', m.rhr.delta >= 3) : cell('Rest HR', '—', 'no data')) +
+        (m.sleep ? cell('Sleep', Math.floor(m.sleep.value) + 'h ' + Math.round((m.sleep.value % 1) * 60) + 'm', m.sleep.value < 6 ? 'short' : 'normal', m.sleep.value < 6) : cell('Sleep', '—', 'no data')) +
+        '</div></div></section>';
+    } else if (D.loaded) {
+      h += '<section class="card note-card">' + ICON.info + '<span>No readiness data for today yet. Wear your fenix overnight; HRV, resting HR and sleep flow from Garmin to Intervals.icu. Until then the plan runs as written.</span></section>';
+    }
+
+    h += '<section class="card"><div class="row-between"><span class="eyebrow">TODAY\'S WORKOUT</span>' + (s.adjusted ? '<span class="pill amber">Adjusted</span>' : '') + '</div>' +
+      '<div class="sess"><div class="sess-icon">' + iconFor(s) + '</div><div><div class="sess-name">' + esc(s.name) + '</div><div class="muted">' + esc(s.summary) + '</div></div></div>' +
+      shapeBar(s, 34) +
+      (s.adjusted && s.notes[0] ? '<div class="why">' + ICON.info + '<span>' + esc(s.notes[0]) + '</span></div>' : '') +
+      (s.type !== 'rest' ? '<button class="btn primary" data-action="open" data-date="' + t + '">' + ICON.watch + ' View steps</button>' : '') +
+      (s.type !== 'rest' ? '<div class="tiny center">' + esc(sentLine(t)) + '</div>' : '') +
+      '</section>';
+
+    h += '<section><div class="row-between"><span class="eyebrow">THIS WEEK</span><button class="link" data-action="go" data-view="plan">See plan</button></div><div class="strip">' +
+      week.map(d => {
+        const isT = d.date === t;
+        const dot = d.status === 'done' ? 'var(--lime)' : d.status === 'missed' ? 'var(--red)' : d.status === 'rest' ? 'transparent' : 'var(--line)';
+        const short = d.type === 'rest' ? 'Rest' : d.sport === 'WeightTraining' ? 'Lift' : d.sport === 'Ride' ? 'Ride' : 'Run';
+        return '<button class="day' + (isT ? ' on' : '') + '" data-action="open" data-date="' + d.date + '" aria-label="' + esc(fmtDate(d.date) + ': ' + d.name + ', ' + d.status) + '"><span class="dn">' + C.DAY_SHORT[C.dayIndex(d.date)] + '</span><span class="dt">' + short + '</span><span class="dot" style="background:' + dot + '"></span></button>';
+      }).join('') + '</div></section>';
+
+    h += '<button class="btn primary" data-action="send"' + (UI.sending ? ' disabled' : '') + '>' + (UI.sending ? 'Sending…' : 'Send next 7 days to watch') + '</button>' +
+      '<div class="tiny center">' + (S.lastSent && !isDemo() ? 'Last sent ' + new Date(S.lastSent).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' }) : 'Workouts go Pace → Intervals.icu → Garmin Connect → fenix 7') + '</div>';
+    return h;
+  }
+
+  function viewPlan() {
+    const t = today();
+    const mon = C.addDays(C.mondayOf(t), UI.weekOffset * 7);
+    const days = plan(mon, 7);
+    const wi = days[0].week;
+    let easy = 0, hard = 0;
+    days.forEach(d => { const x = C.intensitySplit(d.blocks); easy += x.easy; hard += x.hard; });
+    const tot = easy + hard, ep = tot ? Math.round(easy / tot * 100) : 100;
+    const notes = C.planNotes(days, {});
+    let h = header(UI.weekOffset ? 'Next week' : 'Your week', 'Week ' + wi.week + ' · ' + wi.phase + (wi.deload ? ' · recovery week' : '')) + banner();
+    h += '<div class="seg" role="group" aria-label="Which week"><button aria-pressed="' + (UI.weekOffset === 0) + '" data-action="week" data-off="0">This week</button><button aria-pressed="' + (UI.weekOffset === 1) + '" data-action="week" data-off="1">Next week</button></div>';
+    h += '<section class="card"><div class="row-between small"><b>Easy vs hard</b><span class="muted">target 80 / 20</span></div>' +
+      '<div class="split" role="img" aria-label="' + ep + ' percent easy"><div style="flex:' + easy + ';background:var(--z2)"></div><div style="flex:' + hard + ';background:var(--z4)"></div></div>' +
+      '<div class="row-between tiny"><span>' + ep + '% easy · ' + C.fmtDur(tot) + ' run + ride</span><span>' + (100 - ep) + '% hard</span></div></section>';
+    h += '<div class="list">' + days.map(d => {
+      const isT = d.date === t;
+      const right = d.status === 'done' ? '<span class="ok" role="img" aria-label="Done">' + ICON.check + '</span>' :
+        d.status === 'missed' ? '<span class="pill red">Missed</span>' : d.adjusted ? '<span class="pill amber">Adjusted</span>' : '';
+      return '<button class="li' + (isT ? ' on' : '') + '" data-action="open" data-date="' + d.date + '"><span class="li-day">' + C.DAY_SHORT[C.dayIndex(d.date)].toUpperCase() + '</span><span class="li-main"><span class="li-name">' + esc(d.name) + '</span><span class="muted small">' + esc(d.summary) + '</span></span>' + right + '</button>';
+    }).join('') + '</div>';
+    if (notes.length) {
+      h += '<section class="card"><span class="eyebrow">WHY THE PLAN LOOKS LIKE THIS</span>' + notes.map(n => '<div class="bullet ' + n.tone + '"><span>•</span><span>' + esc(n.text) + '</span></div>').join('') + '</section>';
+    }
+    return h;
+  }
+
+  function stepRow(st, max) {
+    const col = st.zone ? C.Z_COLORS[st.zone[1] - 1] : 'var(--muted)';
+    const sub = st.zone ? C.zoneLabel(st.zone) + ' · ' + C.zoneBpm(st.zone, max) : (st.kind === 'lift' ? st.sets + ' sets of ' + st.reps + ' · about ' + C.fmtDur(st.sec) + ' with rest' : C.fmtDur(st.sec));
+    const title = st.kind === 'lift' ? st.move : st.label + ' · ' + C.fmtClock(st.sec);
+    return '<div class="step"><span class="bar" style="background:' + col + '"></span><div><div class="step-name">' + esc(title) + '</div><div class="muted small">' + esc(sub) + '</div></div></div>';
+  }
+
+  function viewDetail() {
+    const s = sessionFor(UI.detail);
+    const max = C.maxHrFor(S);
+    let h = '<header class="top"><button class="icon-btn" data-action="back" aria-label="Back">' + ICON.back + '</button><div class="grow"><h1 class="h-sm">' + esc(s.name) + '</h1><div class="sub">' + esc(fmtDate(s.date) + ' · ' + (s.blocks.length ? C.fmtDur(C.totalSec(s.blocks)) : 'rest day')) + '</div></div></header>';
+    if (s.type === 'rest') {
+      return h + '<section class="card note-card">' + ICON.rest + '<span>' + esc(s.notes[0] || 'Rest day. An easy walk or 10 minutes of mobility is plenty.') + '</span></section>';
+    }
+    if (s.notes.length) h += s.notes.map((n, i) => '<div class="why ' + (i === 0 && s.adjusted ? '' : 'calm') + '">' + ICON.info + '<span>' + esc(n) + '</span></div>').join('');
+    if (s.sport !== 'WeightTraining') h += '<section class="card">' + shapeBar(s, 64) + '<div class="row-between tiny"><span>0:00</span><span>' + C.fmtClock(C.totalSec(s.blocks)) + '</span></div></section>';
+    h += '<span class="eyebrow">STEPS</span><div class="list">';
+    s.blocks.forEach(b => {
+      if (b.repeat) h += '<div class="card repeat"><span class="rep">REPEAT ' + b.repeat + '×</span>' + b.steps.map(x => stepRow(x, max)).join('') + '</div>';
+      else h += '<div class="card">' + stepRow(b, max) + '</div>';
+    });
+    h += '</div>';
+    if (s.sport !== 'WeightTraining') {
+      h += '<span class="eyebrow">ON YOUR WATCH</span><section class="card flat">' +
+        '<div class="kv"><b>Step changes</b><span class="muted small">The fenix beeps, buzzes and shows the next step and its target.</span></div>' +
+        '<div class="kv"><b>Out-of-zone alerts</b><span class="muted small">Alerts when your heart rate leaves the step\'s range, until you\'re back in it.</span></div>' +
+        '<label class="toggle"><span><b>Easy-day ceiling</b><span class="muted small">Easy steps target Zone 1–2, so you only hear about it when you go too hard.</span></span><input type="checkbox" data-setting="easyCeiling"' + (S.easyCeiling !== false ? ' checked' : '') + '></label>' +
+        '<div class="tiny">Beep vs vibrate is set on the watch in the run and bike activity settings.</div></section>';
+    } else {
+      h += '<section class="card note-card">' + ICON.watch + '<span>On the fenix this shows up as a strength workout with one timed step per exercise. Keep this screen handy for the moves and reps.</span></section>';
+    }
+    h += '<details class="card flat"><summary>Workout text sent to Intervals.icu</summary><pre>' + esc(C.icuText(s)) + '</pre></details>';
+    h += '<button class="btn primary" data-action="send"' + (UI.sending ? ' disabled' : '') + '>' + (UI.sending ? 'Sending…' : 'Send next 7 days to watch') + '</button><div class="tiny center">' + esc(sentLine(s.date)) + '</div>';
+    return h;
+  }
+
+  function viewZones() {
+    const max = C.maxHrFor(S);
+    const est = !(Number(S.maxHr) > 0);
+    const ranges = C.zoneRanges(max);
+    const r = ready();
+    const runSet = (D.sport || []).find(s => (s.types || []).includes('Run'));
+    let h = header('Heart rate zones', '% of max heart rate') + banner();
+    h += '<div class="grid2"><label class="card stat"><span class="ml">Max heart rate (bpm)</span><input type="number" inputmode="numeric" min="120" max="230" placeholder="' + C.estMaxHr(S.age) + '" value="' + esc(S.maxHr) + '" data-setting="maxHr"><span class="ms' + (est ? ' warn' : '') + '">' + (est ? 'Estimated from age ' + esc(S.age) : 'Your measured max') + '</span></label>' +
+      '<div class="card stat"><span class="ml">Resting heart rate</span><span class="big">' + (r && r.metrics.rhr ? r.metrics.rhr.value : '—') + ' <small>bpm</small></span><span class="ms">' + (r && r.metrics.rhr ? 'From your watch' : 'No data yet') + '</span></div></div>';
+    h += '<div class="list">' + ranges.slice().reverse().map(z => '<div class="card zone"><span class="zbadge" style="background:' + C.Z_COLORS[z.zone - 1] + '">' + z.zone + '</span><div class="grow"><div class="step-name">' + C.Z_NAMES[z.zone - 1] + '</div><div class="muted small">' + C.Z_USES[z.zone - 1] + '</div></div><span class="zr">' + (z.zone === 1 ? '< ' + z.hi : z.lo + '–' + z.hi) + '</span></div>').join('') + '</div>';
+    if (!isDemo() && D.loaded) {
+      const icuTops = runSet && runSet.hr_zones ? runSet.hr_zones.slice(0, 5) : null;
+      const match = icuTops && icuTops.join() === C.zoneTops(max).join() && runSet.max_hr === max;
+      h += '<section class="card ' + (match ? '' : 'warn-card') + '"><b>' + (match ? 'Intervals.icu matches' : 'Intervals.icu zones differ') + '</b><span class="muted small">' +
+        (runSet ? 'Intervals.icu Run: max ' + esc(runSet.max_hr || '—') + ', zone tops ' + esc(icuTops ? icuTops.join(' / ') : 'not set') + '. Workouts use Intervals.icu\'s zones, so keep them in step.' : 'Could not read your Intervals.icu sport settings.') +
+        '</span>' + (match ? '' : '<button class="btn" data-action="syncZones"' + (UI.syncingZones ? ' disabled' : '') + '>' + (UI.syncingZones ? 'Copying…' : 'Copy these zones to Intervals.icu') + '</button>') + '</section>';
+    }
+    h += '<section class="card tip"><b>Make these yours</b><span class="small">Age formulas can be off by 10+ bpm. After a few hard efforts, use the highest heart rate you\'ve seen as your max. Set the same max in Garmin Connect\'s heart rate zones so the watch agrees.</span></section>';
+    return h;
+  }
+
+  function viewSettings() {
+    const opts = Object.keys(C.SESSION_TYPES).map(k => '<option value="' + k + '">' + C.SESSION_TYPES[k].label + '</option>');
+    const sel = day => '<select data-schedule="' + day + '" aria-label="' + day + ' session">' + opts.map(o => o.replace('value="' + S.schedule[day] + '"', 'value="' + S.schedule[day] + '" selected')).join('') + '</select>';
+    let h = header('Settings', 'Pace') + (D.error && !isDemo() ? '<div class="banner err">' + esc(D.error) + '</div>' : '');
+    h += '<section class="card"><span class="eyebrow">INTERVALS.ICU</span>' +
+      '<label class="field"><span>API key</span><input type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste from Intervals.icu → Settings → Developer" value="' + esc(S.apiKey) + '" data-setting="apiKey"></label>' +
+      '<label class="field"><span>Athlete ID <small class="muted">(0 = you)</small></span><input type="text" autocapitalize="off" value="' + esc(S.athleteId) + '" data-setting="athleteId"></label>' +
+      '<button class="btn" data-action="test">Test connection</button>' +
+      '<ol class="steps-help small"><li>In Intervals.icu, connect Garmin and turn on <b>Upload planned workouts</b>.</li><li>Under Settings → Developer Settings, create an API key and paste it above.</li><li>The key stays on this phone only.</li></ol></section>';
+    h += '<section class="card"><span class="eyebrow">YOU</span><div class="grid2">' +
+      '<label class="field"><span>Age</span><input type="number" inputmode="numeric" value="' + esc(S.age) + '" data-setting="age"></label>' +
+      '<label class="field"><span>Plan start</span><input type="date" value="' + esc(S.planStart || C.mondayOf(today())) + '" data-setting="planStart"></label></div></section>';
+    h += '<section class="card"><span class="eyebrow">WEEKLY SCHEDULE</span>' + C.DAY_KEYS.map((d, i) => '<label class="sched"><span>' + C.DAY_SHORT[i] + '</span>' + sel(d) + '</label>').join('') +
+      '<div class="tiny">Keep hard days apart: Run workout, Long run and Long ride work best with an easy day or rest between them.</div></section>';
+    h += '<section class="card"><span class="eyebrow">BEHAVIOR</span>' +
+      '<label class="toggle"><span><b>Update the watch when I open Pace</b><span class="muted small">Once a day, re-sends the next 7 days so today\'s readiness changes reach the fenix.</span></span><input type="checkbox" data-setting="autoSend"' + (S.autoSend ? ' checked' : '') + '></label>' +
+      '<label class="toggle"><span><b>Easy-day ceiling</b><span class="muted small">Easy steps target Zone 1–2 instead of Zone 2 only.</span></span><input type="checkbox" data-setting="easyCeiling"' + (S.easyCeiling !== false ? ' checked' : '') + '></label></section>';
+    return h;
+  }
+
+  /* ---------------- render ---------------- */
+  function render() {
+    const v = UI.detail ? viewDetail() : ({ today: viewToday, plan: viewPlan, zones: viewZones, settings: viewSettings }[UI.view])();
+    document.getElementById('view').innerHTML = v;
+    document.querySelectorAll('nav [data-view]').forEach(b => b.setAttribute('aria-current', !UI.detail && b.dataset.view === UI.view ? 'page' : 'false'));
+  }
+
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-action]');
+    if (!el) return;
+    const a = el.dataset.action;
+    if (a === 'go') { UI.view = el.dataset.view; UI.detail = null; render(); window.scrollTo(0, 0); }
+    else if (a === 'open') { UI.detail = el.dataset.date; render(); window.scrollTo(0, 0); }
+    else if (a === 'back') { UI.detail = null; render(); }
+    else if (a === 'week') { UI.weekOffset = Number(el.dataset.off); render(); }
+    else if (a === 'send') sendWeek();
+    else if (a === 'refresh') loadAll({ skipAuto: true });
+    else if (a === 'syncZones') syncZones();
+    else if (a === 'test') testConnection();
+  });
+
+  document.addEventListener('change', e => {
+    const el = e.target;
+    if (el.dataset.setting) {
+      const k = el.dataset.setting;
+      const was = S[k];
+      S[k] = el.type === 'checkbox' ? el.checked : el.value.trim();
+      if (k === 'age') S.age = Number(S.age) || 36;
+      if (k === 'apiKey' && S.apiKey && !S.planStart) S.planStart = C.mondayOf(today());
+      saveSettings();
+      if ((k === 'apiKey' || k === 'athleteId') && was !== S[k]) { D.athlete = null; loadAll({ skipAuto: true }); return; }
+      render();
+    } else if (el.dataset.schedule) {
+      S.schedule[el.dataset.schedule] = el.value; saveSettings(); render();
+    }
+  });
+
+  window.addEventListener('pageshow', () => loadAll());
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && D.loaded && !isDemo() && (S.lastSent || '').slice(0, 10) !== today()) loadAll();
+  });
+})();
+
+</script>
+</body>
+</html>
