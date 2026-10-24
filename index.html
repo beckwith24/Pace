@@ -116,6 +116,34 @@ nav{position:fixed;left:0;right:0;bottom:0;background:rgba(14,17,22,.96);border-
 nav button{height:54px;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);font-size:11px;font-weight:600}
 nav button[aria-current="page"]{color:var(--lime)}
 nav>*{max-width:120px;width:100%;justify-self:center}
+.pill.blue{background:var(--z2)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.small-btn{height:42px;font-size:14px}
+.when{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;align-self:center}
+.zt{display:flex;align-items:center;gap:10px;font-size:13px}
+.zdot{width:10px;height:10px;border-radius:5px;flex-shrink:0}
+.zt-bar{width:70px;height:6px;border-radius:3px;background:var(--line);overflow:hidden;flex-shrink:0}
+.zt-bar span{display:block;height:100%}
+.zt-t{width:58px;text-align:right;font-variant-numeric:tabular-nums;color:var(--soft)}
+.ed-step{display:flex;flex-direction:column;gap:8px;border-left:4px solid var(--line);padding-left:10px}
+.repeat .ed-step{margin-top:4px}
+.ed-row{display:flex;align-items:center;gap:8px}
+.ed-row.wrap{flex-wrap:wrap}
+.ed-row input[type=text]{flex:1;min-width:0;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--card2);padding:0 10px;font-size:16px;font-weight:600}
+.ed-row select{height:44px;border-radius:10px;border:1px solid var(--line);background:var(--card2);padding:0 8px;font-size:15px;min-width:0;flex:1}
+.dur{display:flex;align-items:center;gap:6px}
+.dur input{width:60px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--card2);text-align:center;font-size:16px}
+.dur select{flex:0 0 auto;width:64px}
+.ed-row select[data-ef=sets]{flex:0 0 104px}
+.ed-row select[data-ef=zone]{flex:1 1 120px}
+.reps{display:flex;align-items:center;gap:6px;flex:1 1 0;min-width:0}
+.reps input{flex:1;min-width:0;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--card2);padding:0 10px;font-size:16px}
+.ed-btns{display:flex;gap:4px;flex-shrink:0}
+.mini{width:36px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--card2);display:flex;align-items:center;justify-content:center;padding:0}
+.mini:disabled{opacity:.35}
+.mini.danger{color:var(--red)}
+.count{min-width:34px;text-align:center;font-family:var(--display);font-size:22px}
+.field select{height:46px;border-radius:12px;border:1px solid var(--line);background:var(--card2);padding:0 12px;color:var(--text);font-size:16px;width:100%}
 .toast{position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom) + 80px);max-width:448px;margin:0 auto;background:#F2F4F7;color:#0E1116;padding:12px 14px;border-radius:14px;font-size:14px;font-weight:500;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;z-index:5}
 .toast.show{opacity:1;transform:none}
 .toast.err{background:#FFD9DA}
@@ -241,6 +269,25 @@ function flatSteps(blocks) {
   });
   return out;
 }
+function zoneTime(blocks) {
+  const t = [0, 0, 0, 0, 0];
+  flatSteps(blocks).forEach(s => { if (s.zone) t[s.zone[1] - 1] += s.sec; });
+  return t;
+}
+function summarize(s) {
+  if (!s.sport) return 'Optional 10 min mobility';
+  const lifts = s.blocks.filter(b => b.kind === 'lift');
+  if (s.sport === 'WeightTraining') {
+    const sets = lifts.length ? Math.max.apply(null, lifts.map(b => b.sets)) : 0;
+    return (s.focus ? s.focus + ' · ' : '') + lifts.length + ' exercises · ' + sets + ' sets';
+  }
+  const steps = flatSteps(s.blocks).filter(x => x.zone);
+  if (!steps.length) return fmtDur(totalSec(s.blocks));
+  const top = Math.max.apply(null, steps.map(x => x.zone[1]));
+  const hasRepeat = s.blocks.some(b => b.repeat);
+  return fmtDur(totalSec(s.blocks)) + ' · ' + (top >= 3 ? 'Zone ' + top + (hasRepeat ? ' repeats' : ' work') : zoneLabel(steps[0].zone));
+}
+function liftLabel(b) { return b.move + ' ' + b.sets + '×' + b.reps; }
 function intensitySplit(blocks) {
   let easy = 0, hard = 0;
   flatSteps(blocks).forEach(s => { if (!s.zone) return; if (s.zone[1] >= 3) hard += s.sec; else easy += s.sec; });
@@ -491,9 +538,19 @@ function planDays(settings, from, n, ctx) {
       const prev = weekCompletion(settings, addDays(wi.monday, -7), actMap, wi.monday);
       hold = prev.planned > 0 && prev.rate < 0.6;
     }
-    let s = buildSession(sched[DAY_KEYS[dayIndex(date)]], date, settings, { holdProgression: hold });
-    s.held = hold;
-    if (date === today) s = adapt(s, ctx.readiness, settings);
+    const ov = ctx.overrides && ctx.overrides[date];
+    let s;
+    if (ov) {
+      s = Object.assign(clone(ov), { date, week: wi, held: false, adjusted: false, edited: true });
+      s.hard = flatSteps(s.blocks).some(x => x.zone && x.zone[1] >= 4);
+      s.summary = summarize(s);
+      s.notes = (s.notes || []).filter(n => n.indexOf('You edited') !== 0);
+      s.notes.unshift('You edited this workout, so readiness changes leave it alone.');
+    } else {
+      s = buildSession(sched[DAY_KEYS[dayIndex(date)]], date, settings, { holdProgression: hold });
+      s.held = hold;
+      if (date === today) s = adapt(s, ctx.readiness, settings);
+    }
     s.done = isDone(s, actMap);
     s.status = s.type === 'rest' ? 'rest' : s.done ? 'done' : date < today ? 'missed' : date === today ? 'today' : 'upcoming';
     out.push(s);
@@ -515,15 +572,30 @@ function planNotes(days, ctx) {
 }
 
 /* ---------- Intervals.icu ---------- */
+/* Step labels are free text, but Intervals.icu reads durations (10m, 30s),
+   targets (70%, Z2, 220w) and repeat headers (4x) out of a line. Rewrite
+   those tokens in words so a typed label can't change the workout. */
+const UNIT_WORDS = { s: 'sec', sec: 'sec', secs: 'sec', m: 'min', min: 'min', mins: 'min', h: 'hr', hr: 'hr', hrs: 'hr', km: 'kilometers', mi: 'miles', mtr: 'meters', w: 'watts', rpm: 'cadence' };
+function safeLabel(text) {
+  return String(text || '').replace(/[\r\n]+/g, ' ')
+    .replace(/(\d+(?:\.\d+)?)\s*(secs|sec|s|mins|min|m|hrs|hr|h|km|mi|mtr|w|rpm)\b/gi, (_, n, u) => n + ' ' + UNIT_WORDS[u.toLowerCase()])
+    .replace(/(\d+)\s*%/g, '$1 percent')
+    .replace(/\b[zZ](\d)\b/g, 'zone $1')
+    .replace(/\b(\d+)\s*[xX]\b/g, '$1 times')
+    .replace(/^[\s-]+/, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
 function icuStep(s) {
   const target = s.zone ? (s.zone[0] === s.zone[1] ? 'Z' + s.zone[0] + ' HR' : 'Z' + s.zone[0] + '-Z' + s.zone[1] + ' HR') : '';
-  return ('- ' + s.label + ' ' + icuDur(s.sec) + ' ' + target).trim();
+  const label = s.kind === 'lift' ? safeLabel(s.move) + ' ' + s.sets + '×' + safeLabel(s.reps) : safeLabel(s.label);
+  return ('- ' + label + ' ' + icuDur(s.sec) + ' ' + target).replace(/\s{2,}/g, ' ').trim();
 }
 function icuText(session) {
   const parts = [];
-  if (session.type === 'liftA' || session.type === 'liftB') parts.push(session.focus + '. Each step is all sets of one exercise, rest included.\n');
+  if (session.blocks.some(b => b.kind === 'lift')) parts.push((session.focus ? safeLabel(session.focus) + '. ' : '') + 'Each step is all sets of one exercise, rest included.\n');
   session.blocks.forEach(b => {
-    if (b.repeat) parts.push('\n' + b.label + ' ' + b.repeat + 'x\n' + b.steps.map(icuStep).join('\n') + '\n');
+    if (b.repeat) parts.push('\n' + (safeLabel(b.label) || 'Repeat') + ' ' + b.repeat + 'x\n' + b.steps.map(icuStep).join('\n') + '\n');
     else parts.push(icuStep(b));
   });
   return parts.join('\n').replace(/\n{3,}/g, '\n\n').trim();
@@ -534,7 +606,7 @@ function toEvent(session) {
     category: 'WORKOUT',
     start_date_local: session.date + 'T00:00:00',
     type: session.sport,
-    name: session.name,
+    name: String(session.name || 'Workout').slice(0, 80),
     description: icuText(session),
     external_id: externalId(session.date),
   };
@@ -544,7 +616,7 @@ const PaceCore = {
   Z_COLORS, Z_NAMES, Z_USES, SESSION_TYPES, DAY_KEYS, DAY_SHORT, DEFAULT_SCHEDULE, LIFTS,
   ymd, parseYmd, addDays, daysBetween, mondayOf, dayIndex,
   estMaxHr, maxHrFor, zoneTops, zoneRanges, fmtDur, fmtClock, icuDur, zoneLabel, zoneBpm,
-  totalSec, flatSteps, intensitySplit, weekInfo, volumeFactor, buildSession, readiness, adapt,
+  totalSec, flatSteps, intensitySplit, zoneTime, summarize, liftLabel, safeLabel, clone, weekInfo, volumeFactor, buildSession, readiness, adapt,
   activitiesByDate, planDays, planNotes, icuText, toEvent, externalId,
 };
 if (typeof module !== 'undefined') module.exports = PaceCore;
@@ -560,20 +632,26 @@ if (typeof module !== 'undefined') module.exports = PaceCore;
   const DEFAULTS = {
     apiKey: '', athleteId: '0', age: 36, maxHr: '', planStart: '',
     schedule: Object.assign({}, C.DEFAULT_SCHEDULE), easyCeiling: true, autoSend: true, lastSent: '',
+    overrides: {},
   };
+  const ZONE_OPTIONS = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [1, 2], [2, 3], [3, 4], [4, 5]];
 
   function loadSettings() {
     let s = {};
     try { s = JSON.parse(localStorage.getItem(LS_KEY) || '{}') || {}; } catch (e) { s = {}; }
     const out = Object.assign({}, DEFAULTS, s);
     out.schedule = Object.assign({}, C.DEFAULT_SCHEDULE, s.schedule || {});
+    out.overrides = (s.overrides && typeof s.overrides === 'object') ? s.overrides : {};
+    // drop edits for days more than two weeks gone
+    const cutoff = C.addDays(C.ymd(new Date()), -14);
+    Object.keys(out.overrides).forEach(d => { if (d < cutoff) delete out.overrides[d]; });
     return out;
   }
   function saveSettings() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
 
   let S = loadSettings();
   let D = { wellness: [], activities: [], events: [], sport: [], loaded: false, loading: false, error: '', athlete: null };
-  const UI = { view: 'today', detail: null, weekOffset: 0, sending: false, syncingZones: false };
+  const UI = { view: 'today', detail: null, edit: null, weekOffset: 0, sending: false, syncingZones: false };
 
   const today = () => C.ymd(new Date());
   const isDemo = () => !S.apiKey;
@@ -648,7 +726,7 @@ if (typeof module !== 'undefined') module.exports = PaceCore;
   /* ---------------- plan helpers ---------------- */
   function ready() { return C.readiness(D.wellness, today()); }
   function plan(from, n) {
-    return C.planDays(settings(), from, n, { today: today(), readiness: ready(), activities: D.loaded ? D.activities : null });
+    return C.planDays(settings(), from, n, { today: today(), readiness: ready(), activities: D.loaded ? D.activities : null, overrides: S.overrides });
   }
   function sessionFor(date) { return plan(date, 1)[0]; }
   function sentEvent(date) { return (D.events || []).find(e => e.external_id === C.externalId(date)); }
@@ -727,6 +805,12 @@ if (typeof module !== 'undefined') module.exports = PaceCore;
     watch: '<svg width="18" height="18" viewBox="0 0 24 24" ' + P + '><circle cx="12" cy="12" r="6"/><path d="M9 3h6M9 21h6M12 9v3l2 1"/></svg>',
     check: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>',
     info: '<svg width="18" height="18" viewBox="0 0 24 24" ' + P + '><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>',
+    edit: '<svg width="18" height="18" viewBox="0 0 24 24" ' + P + '><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>',
+    up: '<svg width="16" height="16" viewBox="0 0 24 24" ' + P + '><path d="M6 15l6-6 6 6"/></svg>',
+    down: '<svg width="16" height="16" viewBox="0 0 24 24" ' + P + '><path d="M6 9l6 6 6-6"/></svg>',
+    trash: '<svg width="16" height="16" viewBox="0 0 24 24" ' + P + '><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
+    plus: '<svg width="16" height="16" viewBox="0 0 24 24" ' + P + '><path d="M12 5v14M5 12h14"/></svg>',
+    minus: '<svg width="16" height="16" viewBox="0 0 24 24" ' + P + '><path d="M5 12h14"/></svg>',
   };
   const iconFor = s => ICON[s.sport] || ICON.rest;
 
@@ -780,7 +864,7 @@ if (typeof module !== 'undefined') module.exports = PaceCore;
       h += '<section class="card note-card">' + ICON.info + '<span>No readiness data for today yet. Wear your fenix overnight; HRV, resting HR and sleep flow from Garmin to Intervals.icu. Until then the plan runs as written.</span></section>';
     }
 
-    h += '<section class="card"><div class="row-between"><span class="eyebrow">TODAY\'S WORKOUT</span>' + (s.adjusted ? '<span class="pill amber">Adjusted</span>' : '') + '</div>' +
+    h += '<section class="card"><div class="row-between"><span class="eyebrow">TODAY\'S WORKOUT</span>' + (s.edited ? '<span class="pill blue">Edited</span>' : s.adjusted ? '<span class="pill amber">Adjusted</span>' : '') + '</div>' +
       '<div class="sess"><div class="sess-icon">' + iconFor(s) + '</div><div><div class="sess-name">' + esc(s.name) + '</div><div class="muted">' + esc(s.summary) + '</div></div></div>' +
       shapeBar(s, 34) +
       (s.adjusted && s.notes[0] ? '<div class="why">' + ICON.info + '<span>' + esc(s.notes[0]) + '</span></div>' : '') +
@@ -818,7 +902,7 @@ if (typeof module !== 'undefined') module.exports = PaceCore;
     h += '<div class="list">' + days.map(d => {
       const isT = d.date === t;
       const right = d.status === 'done' ? '<span class="ok" role="img" aria-label="Done">' + ICON.check + '</span>' :
-        d.status === 'missed' ? '<span class="pill red">Missed</span>' : d.adjusted ? '<span class="pill amber">Adjusted</span>' : '';
+        d.status === 'missed' ? '<span class="pill red">Missed</span>' : d.edited ? '<span class="pill blue">Edited</span>' : d.adjusted ? '<span class="pill amber">Adjusted</span>' : '';
       return '<button class="li' + (isT ? ' on' : '') + '" data-action="open" data-date="' + d.date + '"><span class="li-day">' + C.DAY_SHORT[C.dayIndex(d.date)].toUpperCase() + '</span><span class="li-main"><span class="li-name">' + esc(d.name) + '</span><span class="muted small">' + esc(d.summary) + '</span></span>' + right + '</button>';
     }).join('') + '</div>';
     if (notes.length) {
@@ -827,28 +911,53 @@ if (typeof module !== 'undefined') module.exports = PaceCore;
     return h;
   }
 
-  function stepRow(st, max) {
+  function stepRow(st, max, start) {
     const col = st.zone ? C.Z_COLORS[st.zone[1] - 1] : 'var(--muted)';
-    const sub = st.zone ? C.zoneLabel(st.zone) + ' · ' + C.zoneBpm(st.zone, max) : (st.kind === 'lift' ? st.sets + ' sets of ' + st.reps + ' · about ' + C.fmtDur(st.sec) + ' with rest' : C.fmtDur(st.sec));
+    const sub = st.zone ? C.zoneLabel(st.zone) + ' · ' + C.zoneBpm(st.zone, max) : (st.kind === 'lift' ? st.sets + ' sets of ' + st.reps + ' · about ' + C.fmtDur(st.sec) + ' with rest' : 'No heart rate target');
     const title = st.kind === 'lift' ? st.move : st.label + ' · ' + C.fmtClock(st.sec);
-    return '<div class="step"><span class="bar" style="background:' + col + '"></span><div><div class="step-name">' + esc(title) + '</div><div class="muted small">' + esc(sub) + '</div></div></div>';
+    const when = start == null ? '' : '<span class="when">' + C.fmtClock(start) + '–' + C.fmtClock(start + st.sec) + '</span>';
+    return '<div class="step"><span class="bar" style="background:' + col + '"></span><div class="grow"><div class="step-name">' + esc(title) + '</div><div class="muted small">' + esc(sub) + '</div></div>' + when + '</div>';
+  }
+
+  function zoneTable(s) {
+    const zt = C.zoneTime(s.blocks), tot = zt.reduce((a, b) => a + b, 0);
+    if (!tot) return '';
+    return '<section class="card"><span class="eyebrow">TIME IN EACH ZONE</span>' + zt.map((sec, i) => !sec ? '' :
+      '<div class="zt"><span class="zdot" style="background:' + C.Z_COLORS[i] + '"></span><span class="grow">Zone ' + (i + 1) + ' · ' + C.Z_NAMES[i] + '</span><span class="zt-bar"><span style="width:' + Math.round(sec / tot * 100) + '%;background:' + C.Z_COLORS[i] + '"></span></span><span class="zt-t">' + C.fmtDur(sec) + '</span></div>').join('') + '</section>';
   }
 
   function viewDetail() {
     const s = sessionFor(UI.detail);
     const max = C.maxHrFor(S);
-    let h = '<header class="top"><button class="icon-btn" data-action="back" aria-label="Back">' + ICON.back + '</button><div class="grow"><h1 class="h-sm">' + esc(s.name) + '</h1><div class="sub">' + esc(fmtDate(s.date) + ' · ' + (s.blocks.length ? C.fmtDur(C.totalSec(s.blocks)) : 'rest day')) + '</div></div></header>';
+    const canEdit = s.date >= today();
+    let h = '<header class="top"><button class="icon-btn" data-action="back" aria-label="Back">' + ICON.back + '</button><div class="grow"><h1 class="h-sm">' + esc(s.name) + '</h1><div class="sub">' + esc(fmtDate(s.date) + ' · ' + (s.blocks.length ? C.fmtDur(C.totalSec(s.blocks)) : 'rest day')) + '</div></div>' +
+      (canEdit ? '<button class="icon-btn" data-action="edit" aria-label="Edit workout">' + ICON.edit + '</button>' : '') + '</header>';
     if (s.type === 'rest') {
-      return h + '<section class="card note-card">' + ICON.rest + '<span>' + esc(s.notes[0] || 'Rest day. An easy walk or 10 minutes of mobility is plenty.') + '</span></section>';
+      h += '<section class="card note-card">' + ICON.rest + '<span>' + esc(s.notes[0] || 'Rest day. An easy walk or 10 minutes of mobility is plenty.') + '</span></section>';
+      if (canEdit) h += '<button class="btn" data-action="edit">Add a workout this day</button>';
+      if (s.edited) h += '<button class="btn ghost" data-action="reset">Reset to the plan</button>';
+      return h;
     }
-    if (s.notes.length) h += s.notes.map((n, i) => '<div class="why ' + (i === 0 && s.adjusted ? '' : 'calm') + '">' + ICON.info + '<span>' + esc(n) + '</span></div>').join('');
+    if (s.notes.length) h += s.notes.map((n, i) => '<div class="why ' + (i === 0 && (s.adjusted || s.edited) ? '' : 'calm') + '">' + ICON.info + '<span>' + esc(n) + '</span></div>').join('');
     if (s.sport !== 'WeightTraining') h += '<section class="card">' + shapeBar(s, 64) + '<div class="row-between tiny"><span>0:00</span><span>' + C.fmtClock(C.totalSec(s.blocks)) + '</span></div></section>';
     h += '<span class="eyebrow">STEPS</span><div class="list">';
+    let t = 0;
     s.blocks.forEach(b => {
-      if (b.repeat) h += '<div class="card repeat"><span class="rep">REPEAT ' + b.repeat + '×</span>' + b.steps.map(x => stepRow(x, max)).join('') + '</div>';
-      else h += '<div class="card">' + stepRow(b, max) + '</div>';
+      if (b.repeat) {
+        const round = b.steps.reduce((a, x) => a + x.sec, 0);
+        h += '<div class="card repeat"><div class="row-between"><span class="rep">REPEAT ' + b.repeat + '×</span><span class="when">' + C.fmtClock(t) + '–' + C.fmtClock(t + round * b.repeat) + '</span></div>' +
+          b.steps.map(x => stepRow(x, max, null)).join('') +
+          '<div class="tiny">Each round ' + C.fmtClock(round) + ' · ' + C.fmtDur(round * b.repeat) + ' in total</div></div>';
+        t += round * b.repeat;
+      } else {
+        h += '<div class="card">' + stepRow(b, max, t) + '</div>';
+        t += b.sec;
+      }
     });
     h += '</div>';
+    if (s.sport !== 'WeightTraining') h += zoneTable(s);
+    if (canEdit) h += '<button class="btn" data-action="edit">' + ICON.edit + ' Edit this workout</button>';
+    if (s.edited) h += '<button class="btn ghost" data-action="reset">Reset to the plan</button>';
     if (s.sport !== 'WeightTraining') {
       h += '<span class="eyebrow">ON YOUR WATCH</span><section class="card flat">' +
         '<div class="kv"><b>Step changes</b><span class="muted small">The fenix beeps, buzzes and shows the next step and its target.</span></div>' +
@@ -861,6 +970,167 @@ if (typeof module !== 'undefined') module.exports = PaceCore;
     h += '<details class="card flat"><summary>Workout text sent to Intervals.icu</summary><pre>' + esc(C.icuText(s)) + '</pre></details>';
     h += '<button class="btn primary" data-action="send"' + (UI.sending ? ' disabled' : '') + '>' + (UI.sending ? 'Sending…' : 'Send next 7 days to watch') + '</button><div class="tiny center">' + esc(sentLine(s.date)) + '</div>';
     return h;
+  }
+
+  /* ---------------- editor ---------------- */
+  function draftFrom(s) {
+    return C.clone({ type: s.type, sport: s.sport, name: s.name, focus: s.focus || '', blocks: s.blocks || [] });
+  }
+  function startEdit(date) {
+    let s = sessionFor(date);
+    if (s.type === 'rest') s = C.buildSession('easyRun', date, settings());
+    UI.edit = { date, draft: draftFrom(s) };
+    UI.detail = null;
+  }
+  // path "3" -> blocks[3]; "3.1" -> blocks[3].steps[1]
+  function locate(path) {
+    const d = UI.edit.draft, p = String(path).split('.').map(Number);
+    if (p.length === 1) return { arr: d.blocks, i: p[0], item: d.blocks[p[0]] };
+    const parent = d.blocks[p[0]];
+    return { arr: parent.steps, i: p[1], item: parent.steps[p[1]], parent };
+  }
+  const clampSec = x => Math.max(10, Math.min(4 * 3600, Math.round(x)));
+
+  function durInputs(st, path) {
+    const m = Math.floor(st.sec / 60), s = st.sec % 60;
+    const secOpts = [0, 15, 30, 45].concat([0, 15, 30, 45].includes(s) ? [] : [s]).sort((a, b) => a - b);
+    return '<span class="dur"><input type="number" inputmode="numeric" min="0" max="240" value="' + m + '" data-ef="min" data-p="' + path + '" aria-label="Minutes"><span class="tiny">min</span>' +
+      '<select data-ef="sec" data-p="' + path + '" aria-label="Seconds">' + secOpts.map(v => '<option value="' + v + '"' + (v === s ? ' selected' : '') + '>' + String(v).padStart(2, '0') + '</option>').join('') + '</select><span class="tiny">sec</span></span>';
+  }
+  function zoneSelect(st, path) {
+    const cur = st.zone ? st.zone.join('-') : '';
+    return '<select data-ef="zone" data-p="' + path + '" aria-label="Heart rate zone">' +
+      '<option value=""' + (cur ? '' : ' selected') + '>No target</option>' +
+      ZONE_OPTIONS.map(z => {
+        const v = z.join('-'), r = C.zoneRanges(C.maxHrFor(S));
+        const bpm = z[0] === 1 ? '<' + r[z[1] - 1].hi : r[z[0] - 1].lo + '–' + r[z[1] - 1].hi;
+        return '<option value="' + v + '"' + (v === cur ? ' selected' : '') + '>Z' + (z[0] === z[1] ? z[0] : z[0] + '–' + z[1]) + ' · ' + bpm + '</option>';
+      }).join('') + '</select>';
+  }
+  function moveBtns(path, i, n) {
+    return '<span class="ed-btns">' +
+      '<button class="mini" data-action="ed-up" data-p="' + path + '" aria-label="Move up"' + (i === 0 ? ' disabled' : '') + '>' + ICON.up + '</button>' +
+      '<button class="mini" data-action="ed-down" data-p="' + path + '" aria-label="Move down"' + (i === n - 1 ? ' disabled' : '') + '>' + ICON.down + '</button>' +
+      '<button class="mini danger" data-action="ed-del" data-p="' + path + '" aria-label="Delete">' + ICON.trash + '</button></span>';
+  }
+  function edStep(st, path, i, n) {
+    const col = st.zone ? C.Z_COLORS[st.zone[1] - 1] : 'var(--line)';
+    return '<div class="ed-step" style="border-left-color:' + col + '">' +
+      '<div class="ed-row"><input type="text" value="' + esc(st.label) + '" data-ef="label" data-p="' + path + '" aria-label="Step name" maxlength="40">' + moveBtns(path, i, n) + '</div>' +
+      '<div class="ed-row wrap">' + durInputs(st, path) + zoneSelect(st, path) + '</div></div>';
+  }
+  function edLift(b, path, i, n) {
+    const setOpts = [1, 2, 3, 4, 5, 6].map(v => '<option value="' + v + '"' + (v === b.sets ? ' selected' : '') + '>' + v + ' sets</option>').join('');
+    return '<div class="ed-step" style="border-left-color:var(--muted)">' +
+      '<div class="ed-row"><input type="text" value="' + esc(b.move) + '" data-ef="move" data-p="' + path + '" aria-label="Exercise" maxlength="40">' + moveBtns(path, i, n) + '</div>' +
+      '<div class="ed-row wrap"><select data-ef="sets" data-p="' + path + '" aria-label="Sets">' + setOpts + '</select>' +
+      '<label class="reps"><span class="tiny">reps</span><input type="text" value="' + esc(b.reps) + '" data-ef="reps" data-p="' + path + '" aria-label="Reps" maxlength="24"></label></div></div>';
+  }
+
+  function viewEdit() {
+    const E = UI.edit, d = E.draft;
+    const typeOpts = '<option value="">Keep current</option>' + Object.keys(C.SESSION_TYPES).map(k => '<option value="' + k + '">' + C.SESSION_TYPES[k].label + '</option>').join('');
+    let h = '<header class="top"><button class="icon-btn" data-action="ed-cancel" aria-label="Cancel editing">' + ICON.back + '</button><div class="grow"><h1 class="h-sm">Edit workout</h1><div class="sub">' + esc(fmtDate(E.date, true)) + '</div></div></header>';
+    h += '<section class="card"><label class="field"><span>Name</span><input type="text" value="' + esc(d.name) + '" data-ed="name" maxlength="60"></label>' +
+      '<label class="field"><span>Start over from a plan workout</span><select data-ed="type">' + typeOpts + '</select></label></section>';
+
+    if (!d.sport) {
+      h += '<section class="card note-card">' + ICON.rest + '<span>This day is set to rest. Saving keeps it a rest day; pick a workout above to add one.</span></section>';
+    } else if (d.sport === 'WeightTraining') {
+      const warm = d.blocks.findIndex(b => b.kind !== 'lift');
+      const lifts = d.blocks.map((b, i) => ({ b, i })).filter(x => x.b.kind === 'lift');
+      if (warm >= 0) h += '<section class="card"><div class="ed-row"><b class="grow">Warm-up</b>' + durInputs(d.blocks[warm], warm) + '</div></section>';
+      h += '<span class="eyebrow">EXERCISES</span><div class="list">' + lifts.map((x, k) => edLift(x.b, x.i, k, lifts.length)).join('') + '</div>' +
+        '<button class="btn" data-action="ed-add-lift">' + ICON.plus + ' Add exercise</button>' +
+        '<div class="tiny">Each exercise gets about 2 minutes per set, rest included, on the watch timer.</div>';
+    } else {
+      h += '<section class="card">' + shapeBar(d, 40) + '<div class="row-between tiny"><span>Total ' + C.fmtDur(C.totalSec(d.blocks)) + '</span><span>' + d.blocks.length + ' blocks</span></div></section>';
+      h += '<span class="eyebrow">STEPS</span><div class="list">';
+      d.blocks.forEach((b, i) => {
+        if (b.repeat) {
+          h += '<div class="card repeat ed-rep"><div class="ed-row"><input type="text" value="' + esc(b.label) + '" data-ef="replabel" data-p="' + i + '" aria-label="Repeat name" maxlength="30">' + moveBtns(i, i, d.blocks.length) + '</div>' +
+            '<div class="ed-row"><span class="rep grow">REPEAT</span><button class="mini" data-action="ed-rep" data-d="-1" data-p="' + i + '" aria-label="One fewer round"' + (b.repeat <= 1 ? ' disabled' : '') + '>' + ICON.minus + '</button><b class="count">' + b.repeat + '×</b><button class="mini" data-action="ed-rep" data-d="1" data-p="' + i + '" aria-label="One more round"' + (b.repeat >= 30 ? ' disabled' : '') + '>' + ICON.plus + '</button></div>' +
+            b.steps.map((st, j) => edStep(st, i + '.' + j, j, b.steps.length)).join('') +
+            '<button class="btn small-btn" data-action="ed-add-step" data-p="' + i + '">' + ICON.plus + ' Step in this repeat</button></div>';
+        } else {
+          h += '<div class="card">' + edStep(b, String(i), i, d.blocks.length) + '</div>';
+        }
+      });
+      h += '</div><div class="grid2"><button class="btn" data-action="ed-add-step">' + ICON.plus + ' Step</button><button class="btn" data-action="ed-add-rep">' + ICON.plus + ' Repeat block</button></div>';
+    }
+    h += '<button class="btn primary" data-action="ed-save">' + (isDemo() ? 'Save' : 'Save and send to watch') + '</button>' +
+      '<button class="btn ghost" data-action="ed-cancel">Cancel</button>';
+    return h;
+  }
+
+  function editAction(a, el) {
+    const d = UI.edit.draft, p = el.dataset.p;
+    if (a === 'ed-up' || a === 'ed-down') {
+      const L = locate(p), j = L.i + (a === 'ed-up' ? -1 : 1);
+      if (j < 0 || j >= L.arr.length) return;
+      const tmp = L.arr[j]; L.arr[j] = L.arr[L.i]; L.arr[L.i] = tmp;
+    } else if (a === 'ed-del') {
+      const L = locate(p);
+      L.arr.splice(L.i, 1);
+      if (L.parent && !L.parent.steps.length) d.blocks.splice(Number(p.split('.')[0]), 1);
+    } else if (a === 'ed-rep') {
+      const b = d.blocks[Number(p)];
+      b.repeat = Math.max(1, Math.min(30, b.repeat + Number(el.dataset.d)));
+    } else if (a === 'ed-add-step') {
+      const z = d.sport === 'Ride' || d.sport === 'Run' ? (S.easyCeiling !== false ? [1, 2] : [2, 2]) : null;
+      const st = { label: 'Easy', sec: 300, zone: z, kind: 'easy' };
+      if (p != null) d.blocks[Number(p)].steps.push(st); else d.blocks.push(st);
+    } else if (a === 'ed-add-rep') {
+      d.blocks.push({ repeat: 3, label: 'Intervals', steps: [
+        { label: 'Work', sec: 180, zone: [4, 4], kind: 'work' },
+        { label: 'Recover', sec: 120, zone: [1, 1], kind: 'rec' }] });
+    } else if (a === 'ed-add-lift') {
+      d.blocks.push({ label: '', sec: 360, zone: null, kind: 'lift', move: 'New exercise', sets: 3, reps: '10' });
+      d.blocks[d.blocks.length - 1].label = C.liftLabel(d.blocks[d.blocks.length - 1]);
+    } else if (a === 'ed-save') { saveEdit(); return; }
+    else if (a === 'ed-cancel') { UI.detail = UI.edit.date; UI.edit = null; }
+    render();
+  }
+
+  function editField(el) {
+    const d = UI.edit.draft;
+    if (el.dataset.ed === 'name') { d.name = el.value.trim() || d.name; return; }
+    if (el.dataset.ed === 'type') {
+      if (!el.value) return;
+      const s = C.buildSession(el.value, UI.edit.date, settings());
+      UI.edit.draft = draftFrom(s);
+      render(); return;
+    }
+    const L = locate(el.dataset.p), it = L.item, f = el.dataset.ef;
+    if (!it) return;
+    if (f === 'label') it.label = el.value.trim() || it.label;
+    else if (f === 'replabel') it.label = el.value.trim() || 'Intervals';
+    else if (f === 'min') it.sec = clampSec((Math.max(0, Number(el.value) || 0)) * 60 + it.sec % 60);
+    else if (f === 'sec') it.sec = clampSec(Math.floor(it.sec / 60) * 60 + Number(el.value));
+    else if (f === 'zone') it.zone = el.value ? el.value.split('-').map(Number) : null;
+    else if (f === 'move') it.move = el.value.trim() || it.move;
+    else if (f === 'sets') { it.sets = Number(el.value); it.sec = it.sets * 120; }
+    else if (f === 'reps') it.reps = el.value.trim() || it.reps;
+    if (it.kind === 'lift') it.label = C.liftLabel(it);
+    if (f === 'zone' && it.zone) it.kind = it.zone[1] >= 3 ? 'work' : (it.kind === 'work' ? 'easy' : it.kind);
+    render();
+  }
+
+  function saveEdit() {
+    const E = UI.edit, d = E.draft;
+    if (d.sport && !d.blocks.length) { toast('Add at least one step, or pick Rest under "Start over".', true); return; }
+    S.overrides[E.date] = { type: d.type, sport: d.sport, name: d.name, focus: d.focus, blocks: d.blocks, notes: [] };
+    saveSettings();
+    UI.detail = E.date; UI.edit = null; render();
+    if (isDemo()) toast('Saved. Connect Intervals.icu in Settings to send it to your watch.');
+    else if (C.daysBetween(today(), E.date) <= 6) sendWeek();
+    else toast('Saved. It goes to your watch when it is within 7 days.');
+  }
+
+  function resetDay(date) {
+    delete S.overrides[date]; saveSettings(); render();
+    if (!isDemo() && C.daysBetween(today(), date) <= 6) sendWeek();
+    else toast('Back to the planned workout.');
   }
 
   function viewZones() {
@@ -906,16 +1176,22 @@ if (typeof module !== 'undefined') module.exports = PaceCore;
 
   /* ---------------- render ---------------- */
   function render() {
-    const v = UI.detail ? viewDetail() : ({ today: viewToday, plan: viewPlan, zones: viewZones, settings: viewSettings }[UI.view])();
+    const v = UI.edit ? viewEdit() : UI.detail ? viewDetail() : ({ today: viewToday, plan: viewPlan, zones: viewZones, settings: viewSettings }[UI.view])();
     document.getElementById('view').innerHTML = v;
-    document.querySelectorAll('nav [data-view]').forEach(b => b.setAttribute('aria-current', !UI.detail && b.dataset.view === UI.view ? 'page' : 'false'));
+    document.querySelectorAll('nav [data-view]').forEach(b => b.setAttribute('aria-current', !UI.detail && !UI.edit && b.dataset.view === UI.view ? 'page' : 'false'));
   }
 
   document.addEventListener('click', e => {
     const el = e.target.closest('[data-action]');
     if (!el) return;
     const a = el.dataset.action;
-    if (a === 'go') { UI.view = el.dataset.view; UI.detail = null; render(); window.scrollTo(0, 0); }
+    if (a.indexOf('ed-') === 0) { if (UI.edit) editAction(a, el); return; }
+    if (a === 'edit') { startEdit(UI.detail); render(); window.scrollTo(0, 0); return; }
+    if (a === 'reset') { resetDay(UI.detail); return; }
+    if (a === 'go') {
+      if (UI.edit && !confirm('Leave without saving your changes?')) return;
+      UI.view = el.dataset.view; UI.detail = null; UI.edit = null; render(); window.scrollTo(0, 0);
+    }
     else if (a === 'open') { UI.detail = el.dataset.date; render(); window.scrollTo(0, 0); }
     else if (a === 'back') { UI.detail = null; render(); }
     else if (a === 'week') { UI.weekOffset = Number(el.dataset.off); render(); }
@@ -927,6 +1203,7 @@ if (typeof module !== 'undefined') module.exports = PaceCore;
 
   document.addEventListener('change', e => {
     const el = e.target;
+    if (UI.edit && (el.dataset.ed || el.dataset.ef)) { editField(el); return; }
     if (el.dataset.setting) {
       const k = el.dataset.setting;
       const was = S[k];

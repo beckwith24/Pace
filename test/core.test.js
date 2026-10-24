@@ -48,4 +48,33 @@ assert.ok(held.every(d => d.held));
 const notHeld = C.planDays(settings, '2026-10-19', 7, { today: '2026-10-19' });
 console.log('\nheld long ride', C.fmtDur(C.totalSec(held[6].blocks)), 'vs normal', C.fmtDur(C.totalSec(notHeld[6].blocks)));
 console.log(C.planNotes(held, {}));
+// labels typed by the user can't inject durations, targets or repeats
+assert.strictEqual(C.safeLabel('Hill 30s at 90% z4'), 'Hill 30 sec at 90 percent zone 4');
+assert.strictEqual(C.safeLabel('- 4x strides 10m'), '4 times strides 10 min');
+assert.strictEqual(C.safeLabel('Easy\nspin'), 'Easy spin');
+
+// overrides replace the planned session and are left alone by readiness
+const ov = {
+  type: 'qualityRun', sport: 'Run', name: 'Hill repeats',
+  blocks: [
+    { label: 'Warm up', sec: 600, zone: [1, 2], kind: 'warm' },
+    { repeat: 6, label: 'Hills', steps: [{ label: 'Up 45s hard', sec: 45, zone: [4, 5], kind: 'work' }, { label: 'Jog down', sec: 90, zone: [1, 1], kind: 'rec' }] },
+    { label: 'Cool down', sec: 300, zone: [1, 1], kind: 'cool' },
+  ],
+};
+const lowR = C.readiness(wellness(38, 62, 5.5), '2026-10-24');
+const e = C.planDays(settings, '2026-10-24', 1, { today: '2026-10-24', readiness: lowR, overrides: { '2026-10-24': ov } })[0];
+assert.ok(e.edited && !e.adjusted && e.name === 'Hill repeats' && e.hard);
+console.log('\n--- edited workout ---\n' + e.summary + '\n' + C.icuText(e));
+assert.ok(C.icuText(e).includes('- Up 45 sec hard 45s Z4-Z5 HR'));
+assert.deepStrictEqual(C.zoneTime(e.blocks), [6 * 90 + 300, 600, 0, 0, 6 * 45]);
+// rest override
+const r = C.planDays(settings, '2026-10-24', 1, { today: '2026-10-24', overrides: { '2026-10-24': { type: 'rest', sport: null, name: 'Rest', blocks: [] } } })[0];
+assert.strictEqual(r.status, 'rest');
+// edited lift
+const lf = { type: 'liftA', sport: 'WeightTraining', name: 'Legs', focus: '', blocks: [{ label: 'x', sec: 360, zone: null, kind: 'lift', move: 'Bulgarian split squat', sets: 3, reps: '8 each leg, 30s rest' }] };
+const lt = C.icuText(C.planDays(settings, '2026-10-25', 1, { today: '2026-10-24', overrides: { '2026-10-25': lf } })[0]);
+console.log('\n--- edited lift ---\n' + lt);
+assert.ok(lt.includes('3×8 each leg, 30 sec rest 6m'));
+
 console.log('\nall tests passed');

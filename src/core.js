@@ -108,6 +108,25 @@ function flatSteps(blocks) {
   });
   return out;
 }
+function zoneTime(blocks) {
+  const t = [0, 0, 0, 0, 0];
+  flatSteps(blocks).forEach(s => { if (s.zone) t[s.zone[1] - 1] += s.sec; });
+  return t;
+}
+function summarize(s) {
+  if (!s.sport) return 'Optional 10 min mobility';
+  const lifts = s.blocks.filter(b => b.kind === 'lift');
+  if (s.sport === 'WeightTraining') {
+    const sets = lifts.length ? Math.max.apply(null, lifts.map(b => b.sets)) : 0;
+    return (s.focus ? s.focus + ' · ' : '') + lifts.length + ' exercises · ' + sets + ' sets';
+  }
+  const steps = flatSteps(s.blocks).filter(x => x.zone);
+  if (!steps.length) return fmtDur(totalSec(s.blocks));
+  const top = Math.max.apply(null, steps.map(x => x.zone[1]));
+  const hasRepeat = s.blocks.some(b => b.repeat);
+  return fmtDur(totalSec(s.blocks)) + ' · ' + (top >= 3 ? 'Zone ' + top + (hasRepeat ? ' repeats' : ' work') : zoneLabel(steps[0].zone));
+}
+function liftLabel(b) { return b.move + ' ' + b.sets + '×' + b.reps; }
 function intensitySplit(blocks) {
   let easy = 0, hard = 0;
   flatSteps(blocks).forEach(s => { if (!s.zone) return; if (s.zone[1] >= 3) hard += s.sec; else easy += s.sec; });
@@ -358,9 +377,19 @@ function planDays(settings, from, n, ctx) {
       const prev = weekCompletion(settings, addDays(wi.monday, -7), actMap, wi.monday);
       hold = prev.planned > 0 && prev.rate < 0.6;
     }
-    let s = buildSession(sched[DAY_KEYS[dayIndex(date)]], date, settings, { holdProgression: hold });
-    s.held = hold;
-    if (date === today) s = adapt(s, ctx.readiness, settings);
+    const ov = ctx.overrides && ctx.overrides[date];
+    let s;
+    if (ov) {
+      s = Object.assign(clone(ov), { date, week: wi, held: false, adjusted: false, edited: true });
+      s.hard = flatSteps(s.blocks).some(x => x.zone && x.zone[1] >= 4);
+      s.summary = summarize(s);
+      s.notes = (s.notes || []).filter(n => n.indexOf('You edited') !== 0);
+      s.notes.unshift('You edited this workout, so readiness changes leave it alone.');
+    } else {
+      s = buildSession(sched[DAY_KEYS[dayIndex(date)]], date, settings, { holdProgression: hold });
+      s.held = hold;
+      if (date === today) s = adapt(s, ctx.readiness, settings);
+    }
     s.done = isDone(s, actMap);
     s.status = s.type === 'rest' ? 'rest' : s.done ? 'done' : date < today ? 'missed' : date === today ? 'today' : 'upcoming';
     out.push(s);
@@ -382,15 +411,30 @@ function planNotes(days, ctx) {
 }
 
 /* ---------- Intervals.icu ---------- */
+/* Step labels are free text, but Intervals.icu reads durations (10m, 30s),
+   targets (70%, Z2, 220w) and repeat headers (4x) out of a line. Rewrite
+   those tokens in words so a typed label can't change the workout. */
+const UNIT_WORDS = { s: 'sec', sec: 'sec', secs: 'sec', m: 'min', min: 'min', mins: 'min', h: 'hr', hr: 'hr', hrs: 'hr', km: 'kilometers', mi: 'miles', mtr: 'meters', w: 'watts', rpm: 'cadence' };
+function safeLabel(text) {
+  return String(text || '').replace(/[\r\n]+/g, ' ')
+    .replace(/(\d+(?:\.\d+)?)\s*(secs|sec|s|mins|min|m|hrs|hr|h|km|mi|mtr|w|rpm)\b/gi, (_, n, u) => n + ' ' + UNIT_WORDS[u.toLowerCase()])
+    .replace(/(\d+)\s*%/g, '$1 percent')
+    .replace(/\b[zZ](\d)\b/g, 'zone $1')
+    .replace(/\b(\d+)\s*[xX]\b/g, '$1 times')
+    .replace(/^[\s-]+/, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
 function icuStep(s) {
   const target = s.zone ? (s.zone[0] === s.zone[1] ? 'Z' + s.zone[0] + ' HR' : 'Z' + s.zone[0] + '-Z' + s.zone[1] + ' HR') : '';
-  return ('- ' + s.label + ' ' + icuDur(s.sec) + ' ' + target).trim();
+  const label = s.kind === 'lift' ? safeLabel(s.move) + ' ' + s.sets + '×' + safeLabel(s.reps) : safeLabel(s.label);
+  return ('- ' + label + ' ' + icuDur(s.sec) + ' ' + target).replace(/\s{2,}/g, ' ').trim();
 }
 function icuText(session) {
   const parts = [];
-  if (session.type === 'liftA' || session.type === 'liftB') parts.push(session.focus + '. Each step is all sets of one exercise, rest included.\n');
+  if (session.blocks.some(b => b.kind === 'lift')) parts.push((session.focus ? safeLabel(session.focus) + '. ' : '') + 'Each step is all sets of one exercise, rest included.\n');
   session.blocks.forEach(b => {
-    if (b.repeat) parts.push('\n' + b.label + ' ' + b.repeat + 'x\n' + b.steps.map(icuStep).join('\n') + '\n');
+    if (b.repeat) parts.push('\n' + (safeLabel(b.label) || 'Repeat') + ' ' + b.repeat + 'x\n' + b.steps.map(icuStep).join('\n') + '\n');
     else parts.push(icuStep(b));
   });
   return parts.join('\n').replace(/\n{3,}/g, '\n\n').trim();
@@ -401,7 +445,7 @@ function toEvent(session) {
     category: 'WORKOUT',
     start_date_local: session.date + 'T00:00:00',
     type: session.sport,
-    name: session.name,
+    name: String(session.name || 'Workout').slice(0, 80),
     description: icuText(session),
     external_id: externalId(session.date),
   };
@@ -411,7 +455,7 @@ const PaceCore = {
   Z_COLORS, Z_NAMES, Z_USES, SESSION_TYPES, DAY_KEYS, DAY_SHORT, DEFAULT_SCHEDULE, LIFTS,
   ymd, parseYmd, addDays, daysBetween, mondayOf, dayIndex,
   estMaxHr, maxHrFor, zoneTops, zoneRanges, fmtDur, fmtClock, icuDur, zoneLabel, zoneBpm,
-  totalSec, flatSteps, intensitySplit, weekInfo, volumeFactor, buildSession, readiness, adapt,
+  totalSec, flatSteps, intensitySplit, zoneTime, summarize, liftLabel, safeLabel, clone, weekInfo, volumeFactor, buildSession, readiness, adapt,
   activitiesByDate, planDays, planNotes, icuText, toEvent, externalId,
 };
 if (typeof module !== 'undefined') module.exports = PaceCore;
