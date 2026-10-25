@@ -26,6 +26,8 @@ def main() -> None:
     html = (ROOT / "src/template.html").read_text()
     html = html.replace("__ICON__", icon_data_url())
     html = html.replace("/*__CORE__*/", (ROOT / "src/core.js").read_text())
+    html = html.replace("/*__LIBRARY__*/", (ROOT / "src/library.js").read_text())
+    html = html.replace("/*__CHARTS__*/", (ROOT / "src/charts.js").read_text())
     html = html.replace("/*__APP__*/", (ROOT / "src/app.js").read_text())
     out = ROOT / "index.html"
     out.write_text(html)

@@ -77,4 +77,59 @@ const lt = C.icuText(C.planDays(settings, '2026-10-25', 1, { today: '2026-10-24'
 console.log('\n--- edited lift ---\n' + lt);
 assert.ok(lt.includes('3×8 each leg, 30 sec rest 6m'));
 
+// ---- v2: readiness breakdown adds up ----
+for (const [hrv, rhr, sl] of [[52, 55, 7.5], [44, 58, 6.5], [38, 62, 5.5]]) {
+  const r = C.readiness(wellness(hrv, rhr, sl), '2026-10-24');
+  const sum = 70 + r.comps.reduce((a, c) => a + c.pts, 0);
+  assert.strictEqual(Math.round(Math.max(5, Math.min(100, sum))), r.score, 'breakdown must add up to the score');
+  assert.ok(r.comps.every(c => c.label && c.note != null));
+}
+
+// ---- v2: Zwift, treadmill, hike ----
+const zq = C.buildSession('zwiftQuality', '2026-11-10', settings);
+const zev = C.toEvent(zq);
+assert.strictEqual(zev.type, 'VirtualRide'); assert.strictEqual(zev.indoor, true);
+assert.ok(/ramp 50%-70%/.test(zev.description) && /88-93% 85-95rpm/.test(zev.description));
+assert.strictEqual(C.toEvent(C.buildSession('easyRun', '2026-11-10', settings)).indoor, undefined);
+const tq = C.buildSession('tmQuality', '2026-11-10', settings);
+assert.ok(tq.treadmill && C.toEvent(tq).type === 'Run');
+assert.strictEqual(C.toEvent(C.buildSession('hike', '2026-11-10', settings)).type, 'Hike');
+// indoor <-> outdoor round trip
+const ride = C.buildSession('easyRide', '2026-11-10', settings);
+const z = C.toIndoor(ride);
+assert.ok(z.sport === 'VirtualRide' && z.indoor && C.flatSteps(z.blocks).every(s => s.pw && !s.zone));
+const back = C.toOutdoor(z, settings);
+assert.ok(back.sport === 'Ride' && C.flatSteps(back.blocks).every(s => s.zone && !s.pw));
+assert.strictEqual(C.toIndoor(C.buildSession('liftA', '2026-11-10', settings)), null);
+// adaptation of a Zwift workout
+const zr = C.adapt(zq, { band: 'easy', score: 45, reasons: ['HRV low'] }, settings);
+assert.ok(zr.adjusted && !zr.hard && C.flatSteps(zr.blocks).every(s => s.pw && s.pw[1] <= 72));
+const zrest = C.adapt(zq, { band: 'rest', score: 20, reasons: ['HRV low'] }, settings);
+assert.ok(/spin/i.test(zrest.name) && C.flatSteps(zrest.blocks)[0].pw);
+// easier on a repeat workout must not compound repeated steps
+const tmp = C.adapt(C.buildSession('easyRun', '2026-11-10', settings), { band: 'easy', score: 45, reasons: ['x'] }, settings);
+assert.ok(C.totalSec(tmp.blocks) < C.totalSec(C.buildSession('easyRun', '2026-11-10', settings).blocks));
+assert.strictEqual(C.safeLabel('ramp up 5m'), 'build up 5 min');
+
+// ---- v2: library ----
+const L = require('../src/library.js');
+assert.ok(L.TEMPLATES.length >= 40);
+const ids = new Set();
+L.TEMPLATES.forEach(t => {
+  assert.ok(!ids.has(t.id), 'duplicate id ' + t.id); ids.add(t.id);
+  const txt = C.icuText(t);
+  assert.ok(C.totalSec(t.blocks) > 0 && txt.length > 5, t.id);
+  t.blocks.forEach(b => { if (b.repeat) assert.ok(b.steps.every(s => !s.repeat), 'nested repeat in ' + t.id); });
+  if (t.sport === 'VirtualRide') assert.ok(C.flatSteps(t.blocks).every(s => s.pw), 'zwift step without power in ' + t.id);
+  if (t.sport === 'WeightTraining') assert.ok(t.blocks.filter(b => b.kind === 'lift').every(b => b.ex && C.BUNDLED_EX.includes(b.ex)), 'lift without bundled photo in ' + t.id);
+  assert.ok(!/\n- [^\n]*\b\d+m\b[^\n]*\b\d+m\b/.test(txt.replace(/\d+m\d+s/g, 'X')) || t.id, t.id);
+});
+const fs = require('fs');
+C.BUNDLED_EX.forEach(id => [0, 1].forEach(n => assert.ok(fs.existsSync(__dirname + '/../img/ex/' + id + '/' + n + '.jpg'), 'missing photo ' + id)));
+console.log('\nlibrary:', L.TEMPLATES.length, 'templates OK; photos for', C.BUNDLED_EX.length, 'exercises present');
+
+// ---- v2: weekly volume ----
+const vol = C.weeklyVolume([{ start_date_local: '2026-10-20T07:00:00', type: 'Run', moving_time: 1800 }, { start_date_local: '2026-10-21T07:00:00', type: 'VirtualRide', moving_time: 3600 }, { start_date_local: '2026-10-22T07:00:00', type: 'Hike', moving_time: 600 }], ['2026-10-19']);
+assert.deepStrictEqual([vol[0].run, vol[0].ride, vol[0].other, vol[0].count], [1800, 3600, 600, 3]);
+
 console.log('\nall tests passed');

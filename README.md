@@ -8,6 +8,16 @@ A personal training app for iPhone + Garmin fenix 7. Pace plans running, cycling
 2. In Intervals.icu: connect Garmin and enable **Upload planned workouts**; create an API key under Settings → Developer Settings.
 3. In Pace → Settings: paste the API key (it is stored only on your phone).
 
+## What's in the app
+
+- **Today**: readiness score with HRV, resting HR, sleep and form; today's workout with one-tap changes (easier, move to treadmill or Zwift, swap from the library, edit steps, rest).
+- **Plan**: any week from 8 back to 6 ahead, planned time by sport, easy/hard split, done and missed sessions, and why the plan changed.
+- **Library**: 46 ready-made workouts (run, treadmill, outdoor ride, Zwift power workouts, hikes, dumbbell strength, mobility) to schedule on any day or customize first.
+- **Data**: everything pulled from Intervals.icu. Readiness math line by line, 7-day vs 4-week averages, charts (readiness, HRV with normal range, resting HR, sleep, fitness/fatigue, form, weekly time by sport), every activity with all its raw fields, a daily wellness log, and CSV export.
+- **Sync status**: a spinner and status chip whenever Pace is syncing or sending, step-by-step send progress, and cached data so the app opens instantly and works offline.
+
+Zwift workouts use power targets (% FTP) and are marked Indoor, which Zwift requires. Treadmill workouts are run workouts you start from the Treadmill activity on the watch.
+
 ## How the plan works
 
 - 12-week blocks: three building weeks then a recovery week (about 30% less volume).
